@@ -7,192 +7,295 @@
              xmlns:enums="clr-namespace:LimpeAgora.Shared.Enums;assembly=LimpeAgora.Shared"
              x:Class="LimpeAgoraApp.Views.MeusPedidosPage"
              x:DataType="vm:MeusPedidosViewModel"
-             Title="{Binding Titulo}">
+             Title="{Binding Titulo}"
+             BackgroundColor="{StaticResource BrandBackground}">
 
     <Grid RowDefinitions="Auto, *">
         
-        <!-- Banner Offline / Cache Local -->
+        <!-- ============================================== -->
+        <!-- BANNER OFFLINE / CACHE LOCAL ESTILIZADO        -->
+        <!-- ============================================== -->
         <Border Grid.Row="0"
                 IsVisible="{Binding DadosLocaisDesatualizados}"
-                BackgroundColor="#FFF3CD"
-                Stroke="#FFEBAA"
-                Padding="12,8">
-            <Label Text="⚠️ Modo offline: exibindo histórico de pedidos em cache no SQLite."
-                   TextColor="#856404"
-                   FontSize="12"
-                   HorizontalOptions="Center" />
+                BackgroundColor="#FEF3C7"
+                Stroke="#FCD34D"
+                StrokeThickness="1"
+                Padding="14,10"
+                Margin="16,8,16,0"
+                StrokeShape="RoundRectangle 12">
+            <HorizontalStackLayout HorizontalOptions="Center" Spacing="8">
+                <Label Text="⚠️" FontSize="14" VerticalOptions="Center" />
+                <Label Text="Modo offline: exibindo pedidos em cache local no SQLite."
+                       TextColor="#92400E"
+                       FontSize="12"
+                       FontAttributes="Bold"
+                       VerticalOptions="Center" />
+            </HorizontalStackLayout>
         </Border>
 
+        <!-- ============================================== -->
+        <!-- LISTA DE PEDIDOS COM PULL-TO-REFRESH           -->
+        <!-- ============================================== -->
         <RefreshView Grid.Row="1"
                      IsRefreshing="{Binding IsBusy}"
-                     Command="{Binding CarregarPedidosCommand}">
-            <ScrollView Padding="16">
-                <VerticalStackLayout Spacing="16">
-                    <Grid ColumnDefinitions="*, Auto">
-                        <VerticalStackLayout Grid.Column="0">
+                     Command="{Binding CarregarPedidosCommand}"
+                     RefreshColor="{StaticResource BrandBlue}">
+            <ScrollView Padding="16,14">
+                <VerticalStackLayout Spacing="16" MaximumWidthRequest="460" HorizontalOptions="Center">
+                    
+                    <!-- Cabeçalho com Título e Botão de Logout -->
+                    <Grid ColumnDefinitions="*, Auto" VerticalOptions="Center">
+                        <VerticalStackLayout Grid.Column="0" Spacing="2">
                             <Label Text="Meus Pedidos"
                                    FontSize="20"
                                    FontAttributes="Bold"
-                                   TextColor="{StaticResource Primary}" />
-                            <Label Text="Acompanhe o andamento dos seus pedidos para retirada"
-                                   FontSize="13"
-                                   TextColor="Gray" />
+                                   TextColor="{StaticResource BrandBlue}" />
+                            <Label Text="Acompanhe o status e histórico de compras para retirada"
+                                   FontSize="12"
+                                   TextColor="{StaticResource BrandTextSecondary}" />
                         </VerticalStackLayout>
 
+                        <!-- Botão Sair da Conta -->
                         <Button Grid.Column="1"
                                 Text="Sair"
                                 Command="{Binding LogoutCommand}"
-                                BackgroundColor="#FFEBEE"
-                                TextColor="#C62828"
+                                BackgroundColor="#FEE2E2"
+                                TextColor="#DC2626"
                                 FontSize="12"
+                                FontAttributes="Bold"
                                 HeightRequest="36"
-                                CornerRadius="6"
+                                Padding="12,0"
+                                CornerRadius="10"
                                 VerticalOptions="Center" />
                     </Grid>
 
+                    <!-- Lista de Pedidos -->
                     <CollectionView ItemsSource="{Binding Pedidos}" SelectionMode="None">
                         <CollectionView.ItemTemplate>
                             <DataTemplate x:DataType="m:PedidoLocal">
-                                <Border StrokeShape="RoundRectangle 12"
+                                <Border StrokeShape="RoundRectangle 18"
                                         StrokeThickness="1"
-                                        Stroke="#E0E0E0"
-                                        BackgroundColor="{AppThemeBinding Light=White, Dark=#2A2A2A}"
+                                        Stroke="{StaticResource BrandBorderBrush}"
+                                        BackgroundColor="{StaticResource BrandSurface}"
                                         Padding="16"
                                         Margin="0,0,0,12">
-                                    <VerticalStackLayout Spacing="8">
-                                        <Grid ColumnDefinitions="*, Auto">
+                                    <Border.Shadow>
+                                        <Shadow Brush="{StaticResource Gray400Brush}"
+                                                Opacity="0.08"
+                                                Radius="14"
+                                                Offset="0,4" />
+                                    </Border.Shadow>
+                                    
+                                    <VerticalStackLayout Spacing="10">
+                                        
+                                        <!-- Linha Superior: Pedido #ID e Badge de Status -->
+                                        <Grid ColumnDefinitions="*, Auto" VerticalOptions="Center">
                                             <VerticalStackLayout Grid.Column="0" Spacing="2">
-                                                <Label Text="{Binding DataPedido, StringFormat='Data: {0:dd/MM/yyyy HH:mm}'}"
-                                                       FontSize="13"
-                                                       FontAttributes="Bold" />
                                                 <Label Text="{Binding Id, StringFormat='Pedido #{0}'}"
+                                                       FontSize="15"
+                                                       FontAttributes="Bold"
+                                                       TextColor="{StaticResource BrandTextPrimary}" />
+                                                <Label Text="{Binding DataPedido, StringFormat='📅 {0:dd/MM/yyyy HH:mm}'}"
                                                        FontSize="11"
-                                                       TextColor="Gray" />
+                                                       TextColor="{StaticResource BrandTextSecondary}" />
                                             </VerticalStackLayout>
 
-                                            <!-- Badge de Status -->
+                                            <!-- Badge de Status do Pedido -->
                                             <Border Grid.Column="1"
-                                                    StrokeShape="RoundRectangle 6"
-                                                    BackgroundColor="{StaticResource Primary}"
-                                                    Padding="8,4">
+                                                    StrokeShape="RoundRectangle 10"
+                                                    BackgroundColor="{StaticResource BrandBlueLight}"
+                                                    Stroke="{StaticResource BrandBlueBrush}"
+                                                    StrokeThickness="1"
+                                                    Padding="10,4">
                                                 <Label Text="{Binding StatusDescricao}"
                                                        FontSize="11"
                                                        FontAttributes="Bold"
-                                                       TextColor="White" />
+                                                       TextColor="{StaticResource BrandBlue}" />
                                             </Border>
                                         </Grid>
 
-                                        <BoxView HeightRequest="1" Color="#EEEEEE" />
+                                        <!-- Divisor Sutil -->
+                                        <BoxView HeightRequest="1" Color="{StaticResource BrandBorder}" />
 
-                                        <Grid ColumnDefinitions="*, Auto">
-                                            <Label Grid.Column="0"
-                                                   Text="{Binding TotalItens, StringFormat='Total de itens: {0} un.'}"
-                                                   FontSize="13"
-                                                   VerticalOptions="Center"
-                                                   TextColor="Gray" />
+                                        <!-- Linha Intermediária: Qtd Itens e Valor Total -->
+                                        <Grid ColumnDefinitions="*, Auto" VerticalOptions="Center">
+                                            <HorizontalStackLayout Grid.Column="0" Spacing="4" VerticalOptions="Center">
+                                                <Label Text="📦" FontSize="13" VerticalOptions="Center" />
+                                                <Label Text="{Binding TotalItens, StringFormat='{0} itens no pedido'}"
+                                                       FontSize="12"
+                                                       TextColor="{StaticResource BrandTextSecondary}"
+                                                       VerticalOptions="Center" />
+                                            </HorizontalStackLayout>
+                                            
                                             <Label Grid.Column="1"
                                                    Text="{Binding ValorTotal, StringFormat='{0:C}'}"
-                                                   FontSize="16"
+                                                   FontSize="17"
                                                    FontAttributes="Bold"
-                                                   TextColor="{StaticResource Primary}" />
+                                                   TextColor="{StaticResource BrandBlue}" />
                                         </Grid>
 
-                                        <!-- Botões de Ação do Pedido -->
+                                        <!-- Linha Inferior: Ações do Pedido -->
                                         <HorizontalStackLayout Spacing="8" HorizontalOptions="End" Margin="0,4,0,0">
+                                            
+                                            <!-- Ver Detalhes -->
                                             <Button Text="Ver Detalhes"
                                                     Command="{Binding Source={RelativeSource AncestorType={x:Type vm:MeusPedidosViewModel}}, Path=VerDetalhesCommand}"
                                                     CommandParameter="{Binding .}"
-                                                    BackgroundColor="{AppThemeBinding Light=#E3F2FD, Dark=#1565C0}"
-                                                    TextColor="{AppThemeBinding Light=#1565C0, Dark=White}"
+                                                    BackgroundColor="{StaticResource BrandBlueLight}"
+                                                    TextColor="{StaticResource BrandBlue}"
                                                     FontSize="12"
+                                                    FontAttributes="Bold"
                                                     HeightRequest="36"
-                                                    CornerRadius="6" />
+                                                    Padding="14,0"
+                                                    CornerRadius="10" />
 
+                                            <!-- Cancelar Pedido (visível apenas para pendentes) -->
                                             <Button Text="Cancelar"
                                                     IsVisible="{Binding Status, Converter={StaticResource StatusPendenteConverter}}"
                                                     Command="{Binding Source={RelativeSource AncestorType={x:Type vm:MeusPedidosViewModel}}, Path=CancelarPedidoCommand}"
                                                     CommandParameter="{Binding .}"
-                                                    BackgroundColor="#FFEBEE"
-                                                    TextColor="#C62828"
+                                                    BackgroundColor="#FEE2E2"
+                                                    TextColor="#DC2626"
                                                     FontSize="12"
+                                                    FontAttributes="Bold"
                                                     HeightRequest="36"
-                                                    CornerRadius="6" />
+                                                    Padding="12,0"
+                                                    CornerRadius="10" />
                                         </HorizontalStackLayout>
                                     </VerticalStackLayout>
                                 </Border>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
                     </CollectionView>
+
                 </VerticalStackLayout>
             </ScrollView>
         </RefreshView>
 
-        <!-- Modal de Detalhes do Pedido Selecionado -->
+        <!-- ============================================== -->
+        <!-- MODAL DE DETALHES DO PEDIDO SELECIONADO        -->
+        <!-- ============================================== -->
         <Grid Grid.Row="0" Grid.RowSpan="2"
               IsVisible="{Binding ModalDetalhesAberto}"
-              BackgroundColor="#80000000">
-            <Border StrokeShape="RoundRectangle 16"
-                    BackgroundColor="{AppThemeBinding Light=White, Dark=#2A2A2A}"
-                    Margin="20,40"
+              BackgroundColor="#80000000"
+              Padding="16,20">
+            
+            <Border StrokeShape="RoundRectangle 24"
+                    BackgroundColor="{StaticResource BrandSurface}"
                     Padding="20"
-                    VerticalOptions="Center">
+                    VerticalOptions="Center"
+                    MaximumHeightRequest="680"
+                    MaximumWidthRequest="440"
+                    HorizontalOptions="Center">
+                <Border.Shadow>
+                    <Shadow Brush="{StaticResource Gray950Brush}"
+                            Opacity="0.25"
+                            Radius="24"
+                            Offset="0,10" />
+                </Border.Shadow>
+                
                 <VerticalStackLayout Spacing="14">
-                    <Grid ColumnDefinitions="*, Auto">
-                        <Label Grid.Column="0"
-                               Text="Detalhes do Pedido"
-                               FontSize="18"
-                               FontAttributes="Bold"
-                               TextColor="{StaticResource Primary}" />
+                    
+                    <!-- Cabeçalho do Modal -->
+                    <Grid ColumnDefinitions="*, Auto" VerticalOptions="Center">
+                        <HorizontalStackLayout Grid.Column="0" Spacing="8" VerticalOptions="Center">
+                            <Label Text="📋" FontSize="20" VerticalOptions="Center" />
+                            <Label Text="Detalhes do Pedido"
+                                   FontSize="18"
+                                   FontAttributes="Bold"
+                                   TextColor="{StaticResource BrandBlue}"
+                                   VerticalOptions="Center" />
+                        </HorizontalStackLayout>
+                        
+                        <!-- Botão Fechar Modal (✕) -->
                         <Button Grid.Column="1"
                                 Text="✕"
                                 Command="{Binding FecharModalDetalhesCommand}"
                                 Background="Transparent"
-                                TextColor="Gray"
-                                FontSize="16" />
+                                TextColor="{StaticResource BrandTextSecondary}"
+                                FontSize="18"
+                                WidthRequest="36"
+                                HeightRequest="36"
+                                Padding="0" />
                     </Grid>
 
-                    <Label Text="Retirada presencial e pagamento à vista no balcão da loja"
+                    <Label Text="Retirada presencial e pagamento à vista no balcão da loja física."
                            FontSize="12"
-                           TextColor="Gray" />
+                           TextColor="{StaticResource BrandTextSecondary}" />
 
-                    <!-- Lista de Itens Comprados (Imutáveis) -->
-                    <ScrollView MaximumHeightRequest="220">
+                    <!-- Lista de Itens Comprados (Rolável) -->
+                    <ScrollView MaximumHeightRequest="240">
                         <CollectionView ItemsSource="{Binding PedidoDetalheSelecionado.Itens}">
                             <CollectionView.ItemTemplate>
                                 <DataTemplate x:DataType="dto:ItemPedidoResponse">
-                                    <Grid ColumnDefinitions="*, Auto" Padding="0,4">
-                                        <VerticalStackLayout Grid.Column="0">
-                                            <Label Text="{Binding NomeProduto}" FontSize="13" FontAttributes="Bold" />
-                                            <Label Text="{Binding Quantidade, StringFormat='Qtd: {0} un.'}" FontSize="11" TextColor="Gray" />
-                                        </VerticalStackLayout>
-                                        <Label Grid.Column="1"
-                                               Text="{Binding Subtotal, StringFormat='{0:C}'}"
-                                               FontSize="13"
-                                               FontAttributes="Bold"
-                                               VerticalOptions="Center" />
-                                    </Grid>
+                                    <Border StrokeShape="RoundRectangle 10"
+                                            Stroke="{StaticResource BrandBorderBrush}"
+                                            StrokeThickness="1"
+                                            BackgroundColor="#F8FAFC"
+                                            Padding="12,8"
+                                            Margin="0,0,0,6">
+                                        <Grid ColumnDefinitions="*, Auto" VerticalOptions="Center">
+                                            <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                                <Label Text="{Binding NomeProduto}"
+                                                       FontSize="13"
+                                                       FontAttributes="Bold"
+                                                       TextColor="{StaticResource BrandTextPrimary}" />
+                                                <Label Text="{Binding Quantidade, StringFormat='Qtd: {0} un.'}"
+                                                       FontSize="11"
+                                                       TextColor="{StaticResource BrandTextSecondary}" />
+                                            </VerticalStackLayout>
+                                            
+                                            <Label Grid.Column="1"
+                                                   Text="{Binding Subtotal, StringFormat='{0:C}'}"
+                                                   FontSize="13"
+                                                   FontAttributes="Bold"
+                                                   TextColor="{StaticResource BrandBlue}"
+                                                   VerticalOptions="Center" />
+                                        </Grid>
+                                    </Border>
                                 </DataTemplate>
                             </CollectionView.ItemTemplate>
                         </CollectionView>
                     </ScrollView>
 
-                    <BoxView HeightRequest="1" Color="#EEEEEE" />
+                    <!-- Resumo do Total -->
+                    <Border StrokeShape="RoundRectangle 14"
+                            BackgroundColor="{StaticResource BrandBlueLight}"
+                            Stroke="{StaticResource BrandBorderBrush}"
+                            StrokeThickness="1"
+                            Padding="14,10">
+                        <Grid ColumnDefinitions="*, Auto" VerticalOptions="Center">
+                            <Label Grid.Column="0"
+                                   Text="Valor Total a Pagar:"
+                                   FontAttributes="Bold"
+                                   FontSize="14"
+                                   TextColor="{StaticResource BrandBlue}"
+                                   VerticalOptions="Center" />
+                            <Label Grid.Column="1"
+                                   Text="{Binding PedidoDetalheSelecionado.ValorTotal, StringFormat='{0:C}'}"
+                                   FontAttributes="Bold"
+                                   FontSize="18"
+                                   TextColor="{StaticResource BrandBlue}"
+                                   VerticalOptions="Center" />
+                        </Grid>
+                    </Border>
 
-                    <Grid ColumnDefinitions="*, Auto">
-                        <Label Grid.Column="0" Text="Valor Total:" FontAttributes="Bold" FontSize="15" />
-                        <Label Grid.Column="1"
-                               Text="{Binding PedidoDetalheSelecionado.ValorTotal, StringFormat='{0:C}'}"
-                               FontAttributes="Bold"
-                               FontSize="17"
-                               TextColor="{StaticResource Primary}" />
-                    </Grid>
-
+                    <!-- Botão Fechar -->
                     <Button Text="Fechar"
                             Command="{Binding FecharModalDetalhesCommand}"
-                            BackgroundColor="{StaticResource Primary}"
+                            BackgroundColor="{StaticResource BrandBlue}"
                             TextColor="White"
-                            CornerRadius="8"
-                            HeightRequest="42" />
+                            FontAttributes="Bold"
+                            FontSize="14"
+                            CornerRadius="14"
+                            HeightRequest="46">
+                        <Button.Shadow>
+                            <Shadow Brush="{StaticResource BrandBlueBrush}"
+                                    Opacity="0.25"
+                                    Radius="10"
+                                    Offset="0,4" />
+                        </Button.Shadow>
+                    </Button>
                 </VerticalStackLayout>
             </Border>
         </Grid>

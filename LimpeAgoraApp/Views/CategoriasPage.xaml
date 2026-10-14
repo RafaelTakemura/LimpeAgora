@@ -5,72 +5,170 @@
              xmlns:m="clr-namespace:LimpeAgoraApp.Models"
              x:Class="LimpeAgoraApp.Views.CategoriasPage"
              x:DataType="vm:CategoriasViewModel"
-             Title="{Binding Titulo}">
+             Title="{Binding Titulo}"
+             BackgroundColor="{StaticResource BrandBackground}">
 
     <Grid RowDefinitions="Auto, *">
         
-        <!-- Banner Offline / Cache Local -->
+        <!-- ============================================== -->
+        <!-- BANNER OFFLINE / CACHE LOCAL ESTILIZADO        -->
+        <!-- ============================================== -->
         <Border Grid.Row="0"
                 IsVisible="{Binding DadosLocaisDesatualizados}"
-                BackgroundColor="#FFF3CD"
-                Stroke="#FFEBAA"
-                Padding="12,8">
-            <Label Text="⚠️ Modo offline: exibindo categorias armazenadas localmente no SQLite."
-                   TextColor="#856404"
-                   FontSize="12"
-                   HorizontalOptions="Center" />
+                BackgroundColor="#FEF3C7"
+                Stroke="#FCD34D"
+                StrokeThickness="1"
+                Padding="14,10"
+                Margin="16,8,16,0"
+                StrokeShape="RoundRectangle 12">
+            <HorizontalStackLayout HorizontalOptions="Center" Spacing="8">
+                <Label Text="⚠️" FontSize="14" VerticalOptions="Center" />
+                <Label Text="Modo offline: exibindo categorias salvas no SQLite."
+                       TextColor="#92400E"
+                       FontSize="12"
+                       FontAttributes="Bold"
+                       VerticalOptions="Center" />
+            </HorizontalStackLayout>
         </Border>
 
+        <!-- ============================================== -->
+        <!-- CONTEÚDO PRINCIPAL COM PULL-TO-REFRESH         -->
+        <!-- ============================================== -->
         <RefreshView Grid.Row="1"
                      IsRefreshing="{Binding IsBusy}"
-                     Command="{Binding CarregarCategoriasCommand}">
-            <ScrollView Padding="16">
-                <VerticalStackLayout Spacing="16">
-                    <Label Text="Escolha uma Categoria"
-                           FontSize="20"
-                           FontAttributes="Bold"
-                           TextColor="{StaticResource Primary}" />
-                    <Label Text="Toque em uma categoria para visualizar seus produtos disponíveis"
-                           FontSize="13"
-                           TextColor="Gray" />
+                     Command="{Binding CarregarCategoriasCommand}"
+                     RefreshColor="{StaticResource BrandBlue}">
+            
+            <ScrollView Padding="16,14">
+                <VerticalStackLayout Spacing="16" MaximumWidthRequest="460" HorizontalOptions="Center">
+                    
+                    <!-- Card de Boas-Vindas com Mascote (Inspiração Duolingo / iFood) -->
+                    <Border StrokeShape="RoundRectangle 20"
+                            Stroke="{StaticResource BrandBorderBrush}"
+                            StrokeThickness="1"
+                            BackgroundColor="{StaticResource BrandSurface}"
+                            Padding="16,14">
+                        <Border.Shadow>
+                            <Shadow Brush="{StaticResource Gray400Brush}"
+                                    Opacity="0.10"
+                                    Radius="14"
+                                    Offset="0,4" />
+                        </Border.Shadow>
+                        
+                        <Grid ColumnDefinitions="60, *" ColumnSpacing="12" VerticalOptions="Center">
+                            <!-- Mini Avatar do Mascote -->
+                            <Border Grid.Column="0"
+                                    StrokeShape="RoundRectangle 30"
+                                    Stroke="{StaticResource BrandCyanBrush}"
+                                    StrokeThickness="2"
+                                    WidthRequest="58"
+                                    HeightRequest="58"
+                                    BackgroundColor="White">
+                                <Image Source="mascote_avatar.png"
+                                       Aspect="AspectFill"
+                                       WidthRequest="58"
+                                       HeightRequest="58" />
+                            </Border>
 
+                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                                <Label Text="Olá! O que vamos limpar hoje? ✨"
+                                       FontSize="15"
+                                       FontAttributes="Bold"
+                                       TextColor="{StaticResource BrandBlue}" />
+                                <Label Text="Escolha uma categoria abaixo para explorar os produtos e montar seu pedido."
+                                       FontSize="12"
+                                       TextColor="{StaticResource BrandTextSecondary}" />
+                            </VerticalStackLayout>
+                        </Grid>
+                    </Border>
+
+                    <!-- Título de Seção -->
+                    <VerticalStackLayout Spacing="2">
+                        <Label Text="Categorias de Produtos"
+                               FontSize="18"
+                               FontAttributes="Bold"
+                               TextColor="{StaticResource BrandTextPrimary}" />
+                        <Label Text="Toque para navegar pelos itens disponíveis"
+                               FontSize="12"
+                               TextColor="{StaticResource BrandTextSecondary}" />
+                    </VerticalStackLayout>
+
+                    <!-- ============================================== -->
+                    <!-- LISTA DE CARDS DE CATEGORIAS                   -->
+                    <!-- ============================================== -->
                     <CollectionView ItemsSource="{Binding Categorias}"
                                     SelectionMode="None">
                         <CollectionView.ItemTemplate>
                             <DataTemplate x:DataType="m:CategoriaLocal">
-                                <Border StrokeShape="RoundRectangle 12"
+                                <Border StrokeShape="RoundRectangle 16"
                                         StrokeThickness="1"
-                                        Stroke="{StaticResource PrimaryBrush}"
-                                        BackgroundColor="{AppThemeBinding Light=White, Dark=#2A2A2A}"
-                                        Padding="16"
-                                        Margin="0,0,0,12">
+                                        Stroke="{StaticResource BrandBorderBrush}"
+                                        BackgroundColor="{StaticResource BrandSurface}"
+                                        Padding="16,14"
+                                        Margin="0,0,0,10">
+                                    <Border.Shadow>
+                                        <Shadow Brush="{StaticResource Gray400Brush}"
+                                                Opacity="0.08"
+                                                Radius="12"
+                                                Offset="0,3" />
+                                    </Border.Shadow>
+                                    
                                     <Border.GestureRecognizers>
                                         <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:CategoriasViewModel}}, Path=SelecionarCategoriaCommand}"
                                                               CommandParameter="{Binding .}" />
                                     </Border.GestureRecognizers>
                                     
-                                    <Grid ColumnDefinitions="*, Auto" VerticalOptions="Center">
-                                        <VerticalStackLayout Grid.Column="0" Spacing="4">
+                                    <Grid ColumnDefinitions="48, *, Auto" ColumnSpacing="12" VerticalOptions="Center">
+                                        
+                                        <!-- Ícone da Categoria em Badge Suave -->
+                                        <Border Grid.Column="0"
+                                                StrokeShape="RoundRectangle 14"
+                                                BackgroundColor="{StaticResource BrandCyanLight}"
+                                                Stroke="Transparent"
+                                                WidthRequest="46"
+                                                HeightRequest="46"
+                                                VerticalOptions="Center"
+                                                HorizontalOptions="Center">
+                                            <Label Text="🧴"
+                                                   FontSize="20"
+                                                   HorizontalOptions="Center"
+                                                   VerticalOptions="Center" />
+                                        </Border>
+
+                                        <!-- Informações da Categoria -->
+                                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
                                             <Label Text="{Binding Nome}"
-                                                   FontSize="18"
+                                                   FontSize="16"
                                                    FontAttributes="Bold"
-                                                   TextColor="{StaticResource Primary}" />
+                                                   TextColor="{StaticResource BrandTextPrimary}" />
                                             <Label Text="{Binding Descricao}"
-                                                   FontSize="13"
-                                                   TextColor="Gray"
+                                                   FontSize="12"
+                                                   TextColor="{StaticResource BrandTextSecondary}"
                                                    LineBreakMode="TailTruncation"
                                                    MaxLines="2" />
                                         </VerticalStackLayout>
-                                        <Label Grid.Column="1"
-                                               Text="➔"
-                                               FontSize="20"
-                                               TextColor="{StaticResource Primary}"
-                                               VerticalOptions="Center" />
+
+                                        <!-- Botão Indicador com Seta -->
+                                        <Border Grid.Column="2"
+                                                StrokeShape="RoundRectangle 18"
+                                                BackgroundColor="{StaticResource BrandBlueLight}"
+                                                Stroke="Transparent"
+                                                WidthRequest="36"
+                                                HeightRequest="36"
+                                                VerticalOptions="Center">
+                                            <Label Text="➔"
+                                                   FontSize="14"
+                                                   FontAttributes="Bold"
+                                                   TextColor="{StaticResource BrandBlue}"
+                                                   HorizontalOptions="Center"
+                                                   VerticalOptions="Center" />
+                                        </Border>
                                     </Grid>
                                 </Border>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
                     </CollectionView>
+
                 </VerticalStackLayout>
             </ScrollView>
         </RefreshView>

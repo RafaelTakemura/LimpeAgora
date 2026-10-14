@@ -4,72 +4,270 @@
              xmlns:vm="clr-namespace:LimpeAgoraApp.ViewModels"
              x:Class="LimpeAgoraApp.Views.CadastroPage"
              x:DataType="vm:CadastroViewModel"
-             Title="{Binding Titulo}">
+             Title="{Binding Titulo}"
+             BackgroundColor="{StaticResource BrandBackground}">
 
-    <ScrollView>
-        <VerticalStackLayout Padding="24" Spacing="16">
-            
-            <Label Text="Crie sua Conta"
-                   FontSize="24"
-                   FontAttributes="Bold"
-                   TextColor="{StaticResource Primary}" />
-            <Label Text="Cadastre-se para montar e acompanhar seus pedidos"
-                   FontSize="13"
-                   TextColor="Gray" />
+    <ScrollView VerticalScrollBarVisibility="Never">
+        <VerticalStackLayout Padding="24,24"
+                             Spacing="0"
+                             MaximumWidthRequest="420"
+                             HorizontalOptions="Center"
+                             VerticalOptions="Center">
 
-            <!-- Alerta de Erro -->
-            <Border IsVisible="{Binding MensagemErro, Converter={StaticResource StringToBooleanConverter}}"
-                    BackgroundColor="#FFEBEE"
-                    Stroke="#E53935"
-                    Padding="12"
-                    StrokeShape="RoundRectangle 8">
-                <Label Text="{Binding MensagemErro}" TextColor="#C62828" FontSize="13" />
+            <!-- ============================================== -->
+            <!-- TOPO: Mascote e Título de Cadastro             -->
+            <!-- ============================================== -->
+            <VerticalStackLayout Spacing="8" HorizontalOptions="Center" Margin="0,0,0,16">
+                <!-- Avatar Circular Reduzido do Mascote -->
+                <Border StrokeShape="RoundRectangle 44"
+                        Stroke="{StaticResource BrandCyanBrush}"
+                        StrokeThickness="2.5"
+                        WidthRequest="88"
+                        HeightRequest="88"
+                        HorizontalOptions="Center"
+                        BackgroundColor="White">
+                    <Border.Shadow>
+                        <Shadow Brush="{StaticResource BrandCyanBrush}"
+                                Opacity="0.25"
+                                Radius="14"
+                                Offset="0,4" />
+                    </Border.Shadow>
+                    
+                    <Image Source="mascote_avatar.png"
+                           Aspect="AspectFill"
+                           WidthRequest="88"
+                           HeightRequest="88" />
+                </Border>
+
+                <Label Text="Crie sua Conta"
+                       FontSize="26"
+                       FontAttributes="Bold"
+                       TextColor="{StaticResource BrandBlue}"
+                       HorizontalOptions="Center" />
+
+                <Label Text="Cadastre-se para montar e retirar seus pedidos"
+                       FontSize="13"
+                       TextColor="{StaticResource BrandTextSecondary}"
+                       HorizontalOptions="Center"
+                       HorizontalTextAlignment="Center" />
+            </VerticalStackLayout>
+
+            <!-- ============================================== -->
+            <!-- CARD CENTRAL: Formulário de Cadastro            -->
+            <!-- ============================================== -->
+            <Border StrokeShape="RoundRectangle 24"
+                    Stroke="{StaticResource BrandBorderBrush}"
+                    StrokeThickness="1"
+                    Padding="22,22"
+                    BackgroundColor="{StaticResource BrandSurface}">
+                <Border.Shadow>
+                    <Shadow Brush="{StaticResource Gray400Brush}"
+                            Opacity="0.14"
+                            Radius="20"
+                            Offset="0,8" />
+                </Border.Shadow>
+
+                <VerticalStackLayout Spacing="13">
+
+                    <!-- Alerta de Erro -->
+                    <Border IsVisible="{Binding MensagemErro, Converter={StaticResource StringToBooleanConverter}}"
+                            BackgroundColor="#FEF2F2"
+                            Stroke="#FCA5A5"
+                            StrokeThickness="1"
+                            Padding="12,10"
+                            StrokeShape="RoundRectangle 12">
+                        <Grid ColumnDefinitions="24, *" ColumnSpacing="8" VerticalOptions="Center">
+                            <Label Grid.Column="0" Text="⚠️" FontSize="15" VerticalOptions="Center" />
+                            <Label Grid.Column="1"
+                                   Text="{Binding MensagemErro}"
+                                   TextColor="#DC2626"
+                                   FontSize="13"
+                                   VerticalOptions="Center"
+                                   LineBreakMode="WordWrap" />
+                        </Grid>
+                    </Border>
+
+                    <!-- Nome Completo -->
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Nome Completo *"
+                               FontSize="13"
+                               FontAttributes="Bold"
+                               TextColor="{StaticResource BrandTextPrimary}" />
+                        <Border StrokeShape="RoundRectangle 14"
+                                Stroke="{StaticResource BrandBorderBrush}"
+                                StrokeThickness="1.5"
+                                BackgroundColor="#F8FAFC"
+                                Padding="14,0"
+                                HeightRequest="48">
+                            <Grid ColumnDefinitions="26, *" VerticalOptions="Center">
+                                <Label Grid.Column="0" Text="👤" FontSize="14" VerticalOptions="Center" />
+                                <Entry Grid.Column="1"
+                                       Placeholder="Ex: Maria da Silva"
+                                       Text="{Binding NomeCompleto}"
+                                       FontSize="14"
+                                       TextColor="{StaticResource BrandTextPrimary}"
+                                       PlaceholderColor="{StaticResource Gray400}"
+                                       VerticalOptions="Center" />
+                            </Grid>
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <!-- E-mail -->
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="E-mail *"
+                               FontSize="13"
+                               FontAttributes="Bold"
+                               TextColor="{StaticResource BrandTextPrimary}" />
+                        <Border StrokeShape="RoundRectangle 14"
+                                Stroke="{StaticResource BrandBorderBrush}"
+                                StrokeThickness="1.5"
+                                BackgroundColor="#F8FAFC"
+                                Padding="14,0"
+                                HeightRequest="48">
+                            <Grid ColumnDefinitions="26, *" VerticalOptions="Center">
+                                <Label Grid.Column="0" Text="✉️" FontSize="14" VerticalOptions="Center" />
+                                <Entry Grid.Column="1"
+                                       Placeholder="nome@exemplo.com"
+                                       Keyboard="Email"
+                                       Text="{Binding Email}"
+                                       FontSize="14"
+                                       TextColor="{StaticResource BrandTextPrimary}"
+                                       PlaceholderColor="{StaticResource Gray400}"
+                                       VerticalOptions="Center" />
+                            </Grid>
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <!-- Telefone -->
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Telefone *"
+                               FontSize="13"
+                               FontAttributes="Bold"
+                               TextColor="{StaticResource BrandTextPrimary}" />
+                        <Border StrokeShape="RoundRectangle 14"
+                                Stroke="{StaticResource BrandBorderBrush}"
+                                StrokeThickness="1.5"
+                                BackgroundColor="#F8FAFC"
+                                Padding="14,0"
+                                HeightRequest="48">
+                            <Grid ColumnDefinitions="26, *" VerticalOptions="Center">
+                                <Label Grid.Column="0" Text="📱" FontSize="14" VerticalOptions="Center" />
+                                <Entry Grid.Column="1"
+                                       Placeholder="(00) 00000-0000"
+                                       Keyboard="Telephone"
+                                       Text="{Binding Telefone}"
+                                       FontSize="14"
+                                       TextColor="{StaticResource BrandTextPrimary}"
+                                       PlaceholderColor="{StaticResource Gray400}"
+                                       VerticalOptions="Center" />
+                            </Grid>
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <!-- Senha -->
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Senha *"
+                               FontSize="13"
+                               FontAttributes="Bold"
+                               TextColor="{StaticResource BrandTextPrimary}" />
+                        <Border StrokeShape="RoundRectangle 14"
+                                Stroke="{StaticResource BrandBorderBrush}"
+                                StrokeThickness="1.5"
+                                BackgroundColor="#F8FAFC"
+                                Padding="14,0"
+                                HeightRequest="48">
+                            <Grid ColumnDefinitions="26, *" VerticalOptions="Center">
+                                <Label Grid.Column="0" Text="🔒" FontSize="14" VerticalOptions="Center" />
+                                <Entry Grid.Column="1"
+                                       Placeholder="Mínimo 6 caracteres"
+                                       IsPassword="True"
+                                       Text="{Binding Senha}"
+                                       FontSize="14"
+                                       TextColor="{StaticResource BrandTextPrimary}"
+                                       PlaceholderColor="{StaticResource Gray400}"
+                                       VerticalOptions="Center" />
+                            </Grid>
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <!-- Confirmar Senha -->
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Confirmar Senha *"
+                               FontSize="13"
+                               FontAttributes="Bold"
+                               TextColor="{StaticResource BrandTextPrimary}" />
+                        <Border StrokeShape="RoundRectangle 14"
+                                Stroke="{StaticResource BrandBorderBrush}"
+                                StrokeThickness="1.5"
+                                BackgroundColor="#F8FAFC"
+                                Padding="14,0"
+                                HeightRequest="48">
+                            <Grid ColumnDefinitions="26, *" VerticalOptions="Center">
+                                <Label Grid.Column="0" Text="🔑" FontSize="14" VerticalOptions="Center" />
+                                <Entry Grid.Column="1"
+                                       Placeholder="Repita sua senha"
+                                       IsPassword="True"
+                                       Text="{Binding ConfirmarSenha}"
+                                       FontSize="14"
+                                       TextColor="{StaticResource BrandTextPrimary}"
+                                       PlaceholderColor="{StaticResource Gray400}"
+                                       VerticalOptions="Center" />
+                            </Grid>
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <!-- Botão Cadastrar Conta (Verde Vibrante Duolingo / Ninja) -->
+                    <Button Text="Cadastrar Conta"
+                            Command="{Binding CadastrarCommand}"
+                            IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}"
+                            BackgroundColor="{StaticResource BrandGreen}"
+                            TextColor="White"
+                            FontAttributes="Bold"
+                            FontSize="16"
+                            CornerRadius="14"
+                            HeightRequest="52"
+                            Margin="0,8,0,0">
+                        <Button.Shadow>
+                            <Shadow Brush="{StaticResource BrandGreenBrush}"
+                                    Opacity="0.32"
+                                    Radius="14"
+                                    Offset="0,6" />
+                        </Button.Shadow>
+                    </Button>
+
+                    <ActivityIndicator IsRunning="{Binding IsBusy}"
+                                       IsVisible="{Binding IsBusy}"
+                                       Color="{StaticResource BrandGreen}"
+                                       HeightRequest="32"
+                                       HorizontalOptions="Center" />
+                </VerticalStackLayout>
             </Border>
 
-            <VerticalStackLayout Spacing="4">
-                <Label Text="Nome Completo *" FontSize="13" FontAttributes="Bold" />
-                <Entry Placeholder="Ex: Maria da Silva" Text="{Binding NomeCompleto}" />
-            </VerticalStackLayout>
-
-            <VerticalStackLayout Spacing="4">
-                <Label Text="E-mail *" FontSize="13" FontAttributes="Bold" />
-                <Entry Placeholder="nome@exemplo.com" Keyboard="Email" Text="{Binding Email}" />
-            </VerticalStackLayout>
-
-            <VerticalStackLayout Spacing="4">
-                <Label Text="Telefone *" FontSize="13" FontAttributes="Bold" />
-                <Entry Placeholder="(00) 00000-0000" Keyboard="Telephone" Text="{Binding Telefone}" />
-            </VerticalStackLayout>
-
-            <VerticalStackLayout Spacing="4">
-                <Label Text="Senha *" FontSize="13" FontAttributes="Bold" />
-                <Entry Placeholder="Mínimo 6 caracteres" IsPassword="True" Text="{Binding Senha}" />
-            </VerticalStackLayout>
-
-            <VerticalStackLayout Spacing="4">
-                <Label Text="Confirmar Senha *" FontSize="13" FontAttributes="Bold" />
-                <Entry Placeholder="Repita sua senha" IsPassword="True" Text="{Binding ConfirmarSenha}" />
-            </VerticalStackLayout>
-
-            <Button Text="Cadastrar Conta"
-                    Command="{Binding CadastrarCommand}"
-                    IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}"
-                    BackgroundColor="{StaticResource Primary}"
-                    TextColor="White"
-                    FontAttributes="Bold"
-                    CornerRadius="8"
-                    HeightRequest="48"
-                    Margin="0,16,0,0" />
-
-            <ActivityIndicator IsRunning="{Binding IsBusy}"
-                               IsVisible="{Binding IsBusy}"
-                               HorizontalOptions="Center" />
-
-            <Button Text="Já tenho uma conta. Voltar ao Login"
-                    Command="{Binding VoltarAoLoginCommand}"
-                    Background="Transparent"
-                    TextColor="{StaticResource Primary}"
-                    HorizontalOptions="Center" />
+            <!-- ============================================== -->
+            <!-- RODAPÉ: Voltar ao Login                        -->
+            <!-- ============================================== -->
+            <Border StrokeShape="RoundRectangle 16"
+                    BackgroundColor="{StaticResource BrandSurface}"
+                    Stroke="{StaticResource BrandBorderBrush}"
+                    StrokeThickness="1"
+                    Padding="16,12"
+                    Margin="0,16,0,16">
+                <HorizontalStackLayout HorizontalOptions="Center" Spacing="6">
+                    <Label Text="Já tem uma conta?"
+                           TextColor="{StaticResource BrandTextSecondary}"
+                           FontSize="14"
+                           VerticalOptions="Center" />
+                    <Button Text="Voltar ao Login"
+                            Command="{Binding VoltarAoLoginCommand}"
+                            Background="Transparent"
+                            TextColor="{StaticResource BrandBlue}"
+                            FontAttributes="Bold"
+                            FontSize="14"
+                            Padding="0"
+                            HeightRequest="36"
+                            VerticalOptions="Center" />
+                </HorizontalStackLayout>
+            </Border>
 
         </VerticalStackLayout>
     </ScrollView>
