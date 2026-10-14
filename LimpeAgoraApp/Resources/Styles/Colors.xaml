@@ -20,6 +20,7 @@
     <Color x:Key="BrandCyan">#0284C7</Color>
     <Color x:Key="BrandCyanLight">#E0F2FE</Color>
     <Color x:Key="BrandGreen">#16A34A</Color>
+    <Color x:Key="BrandGreenDark">#15803D</Color>
     <Color x:Key="BrandGreenLight">#F0FDF4</Color>
     <Color x:Key="BrandYellow">#F59E0B</Color>
     <Color x:Key="BrandYellowLight">#FEF3C7</Color>
@@ -64,6 +65,7 @@
     <SolidColorBrush x:Key="BrandBlueLightBrush" Color="{StaticResource BrandBlueLight}"/>
     <SolidColorBrush x:Key="BrandCyanBrush" Color="{StaticResource BrandCyan}"/>
     <SolidColorBrush x:Key="BrandGreenBrush" Color="{StaticResource BrandGreen}"/>
+    <SolidColorBrush x:Key="BrandGreenDarkBrush" Color="{StaticResource BrandGreenDark}"/>
     <SolidColorBrush x:Key="BrandGreenLightBrush" Color="{StaticResource BrandGreenLight}"/>
     <SolidColorBrush x:Key="BrandYellowBrush" Color="{StaticResource BrandYellow}"/>
     <SolidColorBrush x:Key="BrandBackgroundBrush" Color="{StaticResource BrandBackground}"/>

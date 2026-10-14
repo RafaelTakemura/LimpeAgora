@@ -11,7 +11,8 @@
     <ScrollView VerticalScrollBarVisibility="Never">
         <VerticalStackLayout Padding="24,28"
                              Spacing="0"
-                             MaximumWidthRequest="420"
+                             WidthRequest="360"
+                             MaximumWidthRequest="360"
                              HorizontalOptions="Center"
                              VerticalOptions="Center">
 
@@ -72,6 +73,9 @@
                     StrokeThickness="1"
                     Padding="22,24"
                     BackgroundColor="{StaticResource BrandSurface}"
+                    WidthRequest="360"
+                    MaximumWidthRequest="360"
+                    HorizontalOptions="Center"
                     Margin="0,20,0,0">
                 <Border.Shadow>
                     <Shadow Brush="{StaticResource Gray400Brush}"
@@ -80,7 +84,7 @@
                             Offset="0,8" />
                 </Border.Shadow>
 
-                <VerticalStackLayout Spacing="14">
+                <VerticalStackLayout Spacing="14" WidthRequest="316">
                     
                     <!-- Saudação Amigável -->
                     <VerticalStackLayout Spacing="2">
@@ -115,7 +119,7 @@
                     </Border>
 
                     <!-- Campo: E-mail -->
-                    <VerticalStackLayout Spacing="6">
+                    <VerticalStackLayout Spacing="6" WidthRequest="316">
                         <Label Text="E-mail"
                                FontSize="13"
                                FontAttributes="Bold"
@@ -126,6 +130,7 @@
                                 StrokeThickness="1.5"
                                 BackgroundColor="#F8FAFC"
                                 Padding="14,0"
+                                WidthRequest="316"
                                 HeightRequest="52">
                             <Grid ColumnDefinitions="26, *" VerticalOptions="Center">
                                 <Label Grid.Column="0"
@@ -140,13 +145,14 @@
                                        TextColor="{StaticResource BrandTextPrimary}"
                                        PlaceholderColor="{StaticResource Gray400}"
                                        VerticalOptions="Center"
+                                       HorizontalOptions="Fill"
                                        ClearButtonVisibility="WhileEditing" />
                             </Grid>
                         </Border>
                     </VerticalStackLayout>
 
                     <!-- Campo: Senha -->
-                    <VerticalStackLayout Spacing="6">
+                    <VerticalStackLayout Spacing="6" WidthRequest="316">
                         <Label Text="Senha"
                                FontSize="13"
                                FontAttributes="Bold"
@@ -157,6 +163,7 @@
                                 StrokeThickness="1.5"
                                 BackgroundColor="#F8FAFC"
                                 Padding="14,0"
+                                WidthRequest="316"
                                 HeightRequest="52">
                             <Grid ColumnDefinitions="26, *" VerticalOptions="Center">
                                 <Label Grid.Column="0"
@@ -170,7 +177,8 @@
                                        FontSize="14"
                                        TextColor="{StaticResource BrandTextPrimary}"
                                        PlaceholderColor="{StaticResource Gray400}"
-                                       VerticalOptions="Center" />
+                                       VerticalOptions="Center"
+                                       HorizontalOptions="Fill" />
                             </Grid>
                         </Border>
                     </VerticalStackLayout>
@@ -211,6 +219,9 @@
                     Stroke="{StaticResource BrandBorderBrush}"
                     StrokeThickness="1"
                     Padding="16,12"
+                    WidthRequest="360"
+                    MaximumWidthRequest="360"
+                    HorizontalOptions="Center"
                     Margin="0,16,0,0">
                 <HorizontalStackLayout HorizontalOptions="Center" Spacing="6">
                     <Label Text="Não tem uma conta?"

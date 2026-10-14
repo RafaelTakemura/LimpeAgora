@@ -10,7 +10,8 @@
     <ScrollView VerticalScrollBarVisibility="Never">
         <VerticalStackLayout Padding="24,24"
                              Spacing="0"
-                             MaximumWidthRequest="420"
+                             WidthRequest="360"
+                             MaximumWidthRequest="360"
                              HorizontalOptions="Center"
                              VerticalOptions="Center">
 
@@ -59,7 +60,10 @@
                     Stroke="{StaticResource BrandBorderBrush}"
                     StrokeThickness="1"
                     Padding="22,22"
-                    BackgroundColor="{StaticResource BrandSurface}">
+                    BackgroundColor="{StaticResource BrandSurface}"
+                    WidthRequest="360"
+                    MaximumWidthRequest="360"
+                    HorizontalOptions="Center">
                 <Border.Shadow>
                     <Shadow Brush="{StaticResource Gray400Brush}"
                             Opacity="0.14"
@@ -251,6 +255,9 @@
                     Stroke="{StaticResource BrandBorderBrush}"
                     StrokeThickness="1"
                     Padding="16,12"
+                    WidthRequest="360"
+                    MaximumWidthRequest="360"
+                    HorizontalOptions="Center"
                     Margin="0,16,0,16">
                 <HorizontalStackLayout HorizontalOptions="Center" Spacing="6">
                     <Label Text="Já tem uma conta?"

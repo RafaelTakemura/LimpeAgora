@@ -5,6 +5,15 @@ public partial class App : Application
     public App()
     {
         InitializeComponent();
+
+        AppDomain.CurrentDomain.UnhandledException += (s, e) =>
+        {
+            try
+            {
+                System.IO.File.WriteAllText(@"D:\Projetos\Programacao_WebMobile\LimpeAgora\maui_crash.txt", e.ExceptionObject?.ToString() ?? "Unknown error");
+            }
+            catch { }
+        };
     }
 
     protected override Window CreateWindow(IActivationState? activationState)
