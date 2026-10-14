@@ -5,89 +5,252 @@
              x:Class="LimpeAgoraApp.Views.LoginPage"
              x:DataType="vm:LoginViewModel"
              Title="{Binding Titulo}"
-             Shell.NavBarIsVisible="False">
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="{StaticResource BrandBackground}">
 
-    <ScrollView>
-        <VerticalStackLayout Padding="30" Spacing="20" VerticalOptions="Center">
-            
-            <!-- Logo / Cabeçalho -->
-            <VerticalStackLayout Spacing="6" HorizontalOptions="Center">
+    <ScrollView VerticalScrollBarVisibility="Never">
+        <VerticalStackLayout Padding="24,28"
+                             Spacing="0"
+                             MaximumWidthRequest="420"
+                             HorizontalOptions="Center"
+                             VerticalOptions="Center">
+
+            <!-- ============================================== -->
+            <!-- TOPO: Mascote Ninja + Identidade Visual LimpeAgora -->
+            <!-- ============================================== -->
+            <VerticalStackLayout Spacing="10" HorizontalOptions="Center">
+                
+                <!-- Avatar Circular em Destaque com Mascote Oficial -->
+                <Border StrokeShape="RoundRectangle 64"
+                        Stroke="{StaticResource BrandCyanBrush}"
+                        StrokeThickness="3"
+                        WidthRequest="128"
+                        HeightRequest="128"
+                        HorizontalOptions="Center"
+                        BackgroundColor="White">
+                    <Border.Shadow>
+                        <Shadow Brush="{StaticResource BrandCyanBrush}"
+                                Opacity="0.30"
+                                Radius="18"
+                                Offset="0,6" />
+                    </Border.Shadow>
+                    
+                    <Image Source="mascote_avatar.png"
+                           Aspect="AspectFill"
+                           WidthRequest="128"
+                           HeightRequest="128" />
+                </Border>
+
+                <!-- Nome do Aplicativo -->
                 <Label Text="LimpeAgora"
-                       FontSize="36"
+                       FontSize="30"
                        FontAttributes="Bold"
-                       TextColor="{StaticResource Primary}"
-                       HorizontalOptions="Center" />
-                <Label Text="Produtos de Limpeza para sua Casa ou Empresa"
-                       FontSize="14"
-                       TextColor="Gray"
+                       TextColor="{StaticResource BrandBlue}"
                        HorizontalOptions="Center"
-                       HorizontalTextAlignment="Center" />
+                       Margin="0,4,0,0" />
+
+                <!-- Selo de Propósito / Boas-vindas -->
+                <Border StrokeShape="RoundRectangle 16"
+                        BackgroundColor="{StaticResource BrandCyanLight}"
+                        Stroke="{StaticResource BrandCyanBrush}"
+                        StrokeThickness="1"
+                        Padding="14,5"
+                        HorizontalOptions="Center">
+                    <Label Text="✨ Produtos de limpeza para retirada rápida"
+                           FontSize="12"
+                           FontAttributes="Bold"
+                           TextColor="{StaticResource BrandCyan}"
+                           HorizontalOptions="Center" />
+                </Border>
             </VerticalStackLayout>
 
-            <!-- Card de Login -->
-            <Border StrokeShape="RoundRectangle 16"
-                    Stroke="{StaticResource PrimaryBrush}"
+            <!-- ============================================== -->
+            <!-- CARD CENTRAL: Formulário de Autenticação        -->
+            <!-- ============================================== -->
+            <Border StrokeShape="RoundRectangle 24"
+                    Stroke="{StaticResource BrandBorderBrush}"
                     StrokeThickness="1"
-                    Padding="24"
-                    BackgroundColor="{AppThemeBinding Light=White, Dark=#2C2C2C}">
-                
-                <VerticalStackLayout Spacing="16">
-                    <Label Text="Entrar na sua Conta"
-                           FontSize="20"
-                           FontAttributes="Bold"
-                           HorizontalOptions="Center" />
+                    Padding="22,24"
+                    BackgroundColor="{StaticResource BrandSurface}"
+                    Margin="0,20,0,0">
+                <Border.Shadow>
+                    <Shadow Brush="{StaticResource Gray400Brush}"
+                            Opacity="0.14"
+                            Radius="20"
+                            Offset="0,8" />
+                </Border.Shadow>
 
-                    <!-- Alerta de Erro -->
+                <VerticalStackLayout Spacing="14">
+                    
+                    <!-- Saudação Amigável -->
+                    <VerticalStackLayout Spacing="2">
+                        <Label Text="Bem-vindo(a)! 👋"
+                               FontSize="20"
+                               FontAttributes="Bold"
+                               TextColor="{StaticResource BrandTextPrimary}" />
+                        <Label Text="Acesse com sua conta para continuar"
+                               FontSize="13"
+                               TextColor="{StaticResource BrandTextSecondary}" />
+                    </VerticalStackLayout>
+
+                    <!-- Alerta de Erro com Ícone e Destaque Visual -->
                     <Border IsVisible="{Binding MensagemErro, Converter={StaticResource StringToBooleanConverter}}"
-                            BackgroundColor="#FFEBEE"
-                            Stroke="#E53935"
-                            Padding="12"
-                            StrokeShape="RoundRectangle 8">
-                        <Label Text="{Binding MensagemErro}" TextColor="#C62828" FontSize="13" />
+                            BackgroundColor="#FEF2F2"
+                            Stroke="#FCA5A5"
+                            StrokeThickness="1"
+                            Padding="12,10"
+                            StrokeShape="RoundRectangle 12">
+                        <Grid ColumnDefinitions="24, *" ColumnSpacing="8" VerticalOptions="Center">
+                            <Label Grid.Column="0"
+                                   Text="⚠️"
+                                   FontSize="15"
+                                   VerticalOptions="Center" />
+                            <Label Grid.Column="1"
+                                   Text="{Binding MensagemErro}"
+                                   TextColor="#DC2626"
+                                   FontSize="13"
+                                   VerticalOptions="Center"
+                                   LineBreakMode="WordWrap" />
+                        </Grid>
                     </Border>
 
-                    <!-- Campo E-mail -->
-                    <VerticalStackLayout Spacing="4">
-                        <Label Text="E-mail" FontSize="13" FontAttributes="Bold" />
-                        <Entry Placeholder="seu@email.com"
-                               Keyboard="Email"
-                               Text="{Binding Email}" />
+                    <!-- Campo: E-mail -->
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="E-mail"
+                               FontSize="13"
+                               FontAttributes="Bold"
+                               TextColor="{StaticResource BrandTextPrimary}" />
+                        
+                        <Border StrokeShape="RoundRectangle 14"
+                                Stroke="{StaticResource BrandBorderBrush}"
+                                StrokeThickness="1.5"
+                                BackgroundColor="#F8FAFC"
+                                Padding="14,0"
+                                HeightRequest="52">
+                            <Grid ColumnDefinitions="26, *" VerticalOptions="Center">
+                                <Label Grid.Column="0"
+                                       Text="✉️"
+                                       FontSize="14"
+                                       VerticalOptions="Center" />
+                                <Entry Grid.Column="1"
+                                       Placeholder="seu@email.com"
+                                       Keyboard="Email"
+                                       Text="{Binding Email}"
+                                       FontSize="14"
+                                       TextColor="{StaticResource BrandTextPrimary}"
+                                       PlaceholderColor="{StaticResource Gray400}"
+                                       VerticalOptions="Center"
+                                       ClearButtonVisibility="WhileEditing" />
+                            </Grid>
+                        </Border>
                     </VerticalStackLayout>
 
-                    <!-- Campo Senha -->
-                    <VerticalStackLayout Spacing="4">
-                        <Label Text="Senha" FontSize="13" FontAttributes="Bold" />
-                        <Entry Placeholder="Sua senha"
-                               IsPassword="True"
-                               Text="{Binding Senha}" />
+                    <!-- Campo: Senha -->
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="Senha"
+                               FontSize="13"
+                               FontAttributes="Bold"
+                               TextColor="{StaticResource BrandTextPrimary}" />
+                        
+                        <Border StrokeShape="RoundRectangle 14"
+                                Stroke="{StaticResource BrandBorderBrush}"
+                                StrokeThickness="1.5"
+                                BackgroundColor="#F8FAFC"
+                                Padding="14,0"
+                                HeightRequest="52">
+                            <Grid ColumnDefinitions="26, *" VerticalOptions="Center">
+                                <Label Grid.Column="0"
+                                       Text="🔒"
+                                       FontSize="14"
+                                       VerticalOptions="Center" />
+                                <Entry Grid.Column="1"
+                                       Placeholder="Sua senha de acesso"
+                                       IsPassword="True"
+                                       Text="{Binding Senha}"
+                                       FontSize="14"
+                                       TextColor="{StaticResource BrandTextPrimary}"
+                                       PlaceholderColor="{StaticResource Gray400}"
+                                       VerticalOptions="Center" />
+                            </Grid>
+                        </Border>
                     </VerticalStackLayout>
 
-                    <!-- Botão Entrar -->
+                    <!-- Botão Entrar em Destaque (Azul Royal Ninja) -->
                     <Button Text="Entrar"
                             Command="{Binding RealizarLoginCommand}"
                             IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}"
-                            BackgroundColor="{StaticResource Primary}"
+                            BackgroundColor="{StaticResource BrandBlue}"
                             TextColor="White"
                             FontAttributes="Bold"
-                            CornerRadius="8"
-                            HeightRequest="48"
-                            Margin="0,10,0,0" />
+                            FontSize="16"
+                            CornerRadius="14"
+                            HeightRequest="52"
+                            Margin="0,8,0,0">
+                        <Button.Shadow>
+                            <Shadow Brush="{StaticResource BrandBlueBrush}"
+                                    Opacity="0.32"
+                                    Radius="14"
+                                    Offset="0,6" />
+                        </Button.Shadow>
+                    </Button>
 
+                    <!-- Indicador de Carregamento -->
                     <ActivityIndicator IsRunning="{Binding IsBusy}"
                                        IsVisible="{Binding IsBusy}"
+                                       Color="{StaticResource BrandBlue}"
+                                       HeightRequest="36"
                                        HorizontalOptions="Center" />
                 </VerticalStackLayout>
             </Border>
 
-            <!-- Rodapé / Cadastro -->
-            <HorizontalStackLayout HorizontalOptions="Center" Spacing="6">
-                <Label Text="Não tem uma conta?" TextColor="Gray" VerticalOptions="Center" />
-                <Button Text="Cadastre-se"
-                        Command="{Binding IrParaCadastroCommand}"
-                        Background="Transparent"
-                        TextColor="{StaticResource Primary}"
-                        FontAttributes="Bold"
-                        Padding="0" />
+            <!-- ============================================== -->
+            <!-- RODAPÉ: Acesso a Cadastro e Diferenciais       -->
+            <!-- ============================================== -->
+            <Border StrokeShape="RoundRectangle 16"
+                    BackgroundColor="{StaticResource BrandSurface}"
+                    Stroke="{StaticResource BrandBorderBrush}"
+                    StrokeThickness="1"
+                    Padding="16,12"
+                    Margin="0,16,0,0">
+                <HorizontalStackLayout HorizontalOptions="Center" Spacing="6">
+                    <Label Text="Não tem uma conta?"
+                           TextColor="{StaticResource BrandTextSecondary}"
+                           FontSize="14"
+                           VerticalOptions="Center" />
+                    <Button Text="Cadastre-se aqui"
+                            Command="{Binding IrParaCadastroCommand}"
+                            Background="Transparent"
+                            TextColor="{StaticResource BrandGreen}"
+                            FontAttributes="Bold"
+                            FontSize="14"
+                            Padding="0"
+                            HeightRequest="36"
+                            VerticalOptions="Center" />
+                </HorizontalStackLayout>
+            </Border>
+
+            <!-- Badges de Confiabilidade / Freshness -->
+            <HorizontalStackLayout HorizontalOptions="Center" Spacing="16" Margin="0,16,0,6">
+                <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                    <Label Text="⚡" FontSize="13" VerticalOptions="Center" />
+                    <Label Text="Retirada Expressa"
+                           FontSize="12"
+                           TextColor="{StaticResource BrandTextSecondary}"
+                           VerticalOptions="Center" />
+                </HorizontalStackLayout>
+                
+                <BoxView WidthRequest="1"
+                         HeightRequest="12"
+                         BackgroundColor="{StaticResource BrandBorder}"
+                         VerticalOptions="Center" />
+                
+                <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                    <Label Text="🛡️" FontSize="13" VerticalOptions="Center" />
+                    <Label Text="Compra Segura"
+                           FontSize="12"
+                           TextColor="{StaticResource BrandTextSecondary}"
+                           VerticalOptions="Center" />
+                </HorizontalStackLayout>
             </HorizontalStackLayout>
 
         </VerticalStackLayout>
