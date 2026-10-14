@@ -8,57 +8,54 @@
              Shell.NavBarIsVisible="False"
              BackgroundColor="{StaticResource BrandBackground}">
 
-    <ScrollView VerticalScrollBarVisibility="Never">
-        <VerticalStackLayout Padding="24,28"
-                             Spacing="0"
-                             WidthRequest="360"
-                             MaximumWidthRequest="360"
-                             HorizontalOptions="Center"
-                             VerticalOptions="Center">
+    <ScrollView VerticalScrollBarVisibility="Never" Padding="0,16">
+        <VerticalStackLayout Spacing="0"
+                             WidthRequest="340"
+                             HorizontalOptions="Center">
 
             <!-- ============================================== -->
             <!-- TOPO: Mascote Ninja + Identidade Visual LimpeAgora -->
             <!-- ============================================== -->
-            <VerticalStackLayout Spacing="10" HorizontalOptions="Center">
+            <VerticalStackLayout Spacing="8" HorizontalOptions="Center" WidthRequest="340">
                 
                 <!-- Avatar Circular em Destaque com Mascote Oficial -->
-                <Border StrokeShape="RoundRectangle 64"
+                <Border StrokeShape="RoundRectangle 50"
                         Stroke="{StaticResource BrandCyanBrush}"
-                        StrokeThickness="3"
-                        WidthRequest="128"
-                        HeightRequest="128"
+                        StrokeThickness="2.5"
+                        WidthRequest="100"
+                        HeightRequest="100"
                         HorizontalOptions="Center"
                         BackgroundColor="White">
                     <Border.Shadow>
                         <Shadow Brush="{StaticResource BrandCyanBrush}"
-                                Opacity="0.30"
-                                Radius="18"
-                                Offset="0,6" />
+                                Opacity="0.25"
+                                Radius="14"
+                                Offset="0,4" />
                     </Border.Shadow>
                     
                     <Image Source="mascote_avatar.png"
                            Aspect="AspectFill"
-                           WidthRequest="128"
-                           HeightRequest="128" />
+                           WidthRequest="100"
+                           HeightRequest="100" />
                 </Border>
 
                 <!-- Nome do Aplicativo -->
                 <Label Text="LimpeAgora"
-                       FontSize="30"
+                       FontSize="26"
                        FontAttributes="Bold"
                        TextColor="{StaticResource BrandBlue}"
                        HorizontalOptions="Center"
-                       Margin="0,4,0,0" />
+                       Margin="0,2,0,0" />
 
                 <!-- Selo de Propósito / Boas-vindas -->
-                <Border StrokeShape="RoundRectangle 16"
+                <Border StrokeShape="RoundRectangle 14"
                         BackgroundColor="{StaticResource BrandCyanLight}"
                         Stroke="{StaticResource BrandCyanBrush}"
                         StrokeThickness="1"
-                        Padding="14,5"
+                        Padding="12,4"
                         HorizontalOptions="Center">
                     <Label Text="✨ Produtos de limpeza para retirada rápida"
-                           FontSize="12"
+                           FontSize="11"
                            FontAttributes="Bold"
                            TextColor="{StaticResource BrandCyan}"
                            HorizontalOptions="Center" />
@@ -68,32 +65,31 @@
             <!-- ============================================== -->
             <!-- CARD CENTRAL: Formulário de Autenticação        -->
             <!-- ============================================== -->
-            <Border StrokeShape="RoundRectangle 24"
+            <Border StrokeShape="RoundRectangle 22"
                     Stroke="{StaticResource BrandBorderBrush}"
                     StrokeThickness="1"
-                    Padding="22,24"
+                    Padding="20,20"
                     BackgroundColor="{StaticResource BrandSurface}"
-                    WidthRequest="360"
-                    MaximumWidthRequest="360"
+                    WidthRequest="340"
                     HorizontalOptions="Center"
-                    Margin="0,20,0,0">
+                    Margin="0,14,0,0">
                 <Border.Shadow>
                     <Shadow Brush="{StaticResource Gray400Brush}"
-                            Opacity="0.14"
-                            Radius="20"
-                            Offset="0,8" />
+                            Opacity="0.12"
+                            Radius="16"
+                            Offset="0,6" />
                 </Border.Shadow>
 
-                <VerticalStackLayout Spacing="14" WidthRequest="316">
+                <VerticalStackLayout Spacing="13">
                     
                     <!-- Saudação Amigável -->
                     <VerticalStackLayout Spacing="2">
                         <Label Text="Bem-vindo(a)! 👋"
-                               FontSize="20"
+                               FontSize="19"
                                FontAttributes="Bold"
                                TextColor="{StaticResource BrandTextPrimary}" />
                         <Label Text="Acesse com sua conta para continuar"
-                               FontSize="13"
+                               FontSize="12"
                                TextColor="{StaticResource BrandTextSecondary}" />
                     </VerticalStackLayout>
 
@@ -102,26 +98,26 @@
                             BackgroundColor="#FEF2F2"
                             Stroke="#FCA5A5"
                             StrokeThickness="1"
-                            Padding="12,10"
+                            Padding="12,8"
                             StrokeShape="RoundRectangle 12">
-                        <Grid ColumnDefinitions="24, *" ColumnSpacing="8" VerticalOptions="Center">
+                        <Grid ColumnDefinitions="22, *" ColumnSpacing="8" VerticalOptions="Center">
                             <Label Grid.Column="0"
                                    Text="⚠️"
-                                   FontSize="15"
+                                   FontSize="14"
                                    VerticalOptions="Center" />
                             <Label Grid.Column="1"
                                    Text="{Binding MensagemErro}"
                                    TextColor="#DC2626"
-                                   FontSize="13"
+                                   FontSize="12"
                                    VerticalOptions="Center"
                                    LineBreakMode="WordWrap" />
                         </Grid>
                     </Border>
 
                     <!-- Campo: E-mail -->
-                    <VerticalStackLayout Spacing="6" WidthRequest="316">
+                    <VerticalStackLayout Spacing="4">
                         <Label Text="E-mail"
-                               FontSize="13"
+                               FontSize="12"
                                FontAttributes="Bold"
                                TextColor="{StaticResource BrandTextPrimary}" />
                         
@@ -129,19 +125,19 @@
                                 Stroke="{StaticResource BrandBorderBrush}"
                                 StrokeThickness="1.5"
                                 BackgroundColor="#F8FAFC"
-                                Padding="14,0"
-                                WidthRequest="316"
-                                HeightRequest="52">
-                            <Grid ColumnDefinitions="26, *" VerticalOptions="Center">
+                                Padding="12,0"
+                                HeightRequest="48"
+                                HorizontalOptions="Fill">
+                            <Grid ColumnDefinitions="24, *" ColumnSpacing="8" VerticalOptions="Center">
                                 <Label Grid.Column="0"
                                        Text="✉️"
-                                       FontSize="14"
+                                       FontSize="13"
                                        VerticalOptions="Center" />
                                 <Entry Grid.Column="1"
                                        Placeholder="seu@email.com"
                                        Keyboard="Email"
                                        Text="{Binding Email}"
-                                       FontSize="14"
+                                       FontSize="13"
                                        TextColor="{StaticResource BrandTextPrimary}"
                                        PlaceholderColor="{StaticResource Gray400}"
                                        VerticalOptions="Center"
@@ -152,9 +148,9 @@
                     </VerticalStackLayout>
 
                     <!-- Campo: Senha -->
-                    <VerticalStackLayout Spacing="6" WidthRequest="316">
+                    <VerticalStackLayout Spacing="4">
                         <Label Text="Senha"
-                               FontSize="13"
+                               FontSize="12"
                                FontAttributes="Bold"
                                TextColor="{StaticResource BrandTextPrimary}" />
                         
@@ -162,19 +158,19 @@
                                 Stroke="{StaticResource BrandBorderBrush}"
                                 StrokeThickness="1.5"
                                 BackgroundColor="#F8FAFC"
-                                Padding="14,0"
-                                WidthRequest="316"
-                                HeightRequest="52">
-                            <Grid ColumnDefinitions="26, *" VerticalOptions="Center">
+                                Padding="12,0"
+                                HeightRequest="48"
+                                HorizontalOptions="Fill">
+                            <Grid ColumnDefinitions="24, *" ColumnSpacing="8" VerticalOptions="Center">
                                 <Label Grid.Column="0"
                                        Text="🔒"
-                                       FontSize="14"
+                                       FontSize="13"
                                        VerticalOptions="Center" />
                                 <Entry Grid.Column="1"
                                        Placeholder="Sua senha de acesso"
                                        IsPassword="True"
                                        Text="{Binding Senha}"
-                                       FontSize="14"
+                                       FontSize="13"
                                        TextColor="{StaticResource BrandTextPrimary}"
                                        PlaceholderColor="{StaticResource Gray400}"
                                        VerticalOptions="Center"
@@ -190,15 +186,15 @@
                             BackgroundColor="{StaticResource BrandBlue}"
                             TextColor="White"
                             FontAttributes="Bold"
-                            FontSize="16"
+                            FontSize="15"
                             CornerRadius="14"
-                            HeightRequest="52"
-                            Margin="0,8,0,0">
+                            HeightRequest="48"
+                            Margin="0,4,0,0">
                         <Button.Shadow>
                             <Shadow Brush="{StaticResource BrandBlueBrush}"
-                                    Opacity="0.32"
-                                    Radius="14"
-                                    Offset="0,6" />
+                                    Opacity="0.28"
+                                    Radius="12"
+                                    Offset="0,4" />
                         </Button.Shadow>
                     </Button>
 
@@ -206,7 +202,7 @@
                     <ActivityIndicator IsRunning="{Binding IsBusy}"
                                        IsVisible="{Binding IsBusy}"
                                        Color="{StaticResource BrandBlue}"
-                                       HeightRequest="36"
+                                       HeightRequest="32"
                                        HorizontalOptions="Center" />
                 </VerticalStackLayout>
             </Border>
@@ -218,34 +214,33 @@
                     BackgroundColor="{StaticResource BrandSurface}"
                     Stroke="{StaticResource BrandBorderBrush}"
                     StrokeThickness="1"
-                    Padding="16,12"
-                    WidthRequest="360"
-                    MaximumWidthRequest="360"
+                    Padding="14,10"
+                    WidthRequest="340"
                     HorizontalOptions="Center"
-                    Margin="0,16,0,0">
+                    Margin="0,12,0,0">
                 <HorizontalStackLayout HorizontalOptions="Center" Spacing="6">
                     <Label Text="Não tem uma conta?"
                            TextColor="{StaticResource BrandTextSecondary}"
-                           FontSize="14"
+                           FontSize="13"
                            VerticalOptions="Center" />
                     <Button Text="Cadastre-se aqui"
                             Command="{Binding IrParaCadastroCommand}"
                             Background="Transparent"
                             TextColor="{StaticResource BrandGreen}"
                             FontAttributes="Bold"
-                            FontSize="14"
+                            FontSize="13"
                             Padding="0"
-                            HeightRequest="36"
+                            HeightRequest="32"
                             VerticalOptions="Center" />
                 </HorizontalStackLayout>
             </Border>
 
             <!-- Badges de Confiabilidade / Freshness -->
-            <HorizontalStackLayout HorizontalOptions="Center" Spacing="16" Margin="0,16,0,6">
+            <HorizontalStackLayout HorizontalOptions="Center" Spacing="16" Margin="0,12,0,16">
                 <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
-                    <Label Text="⚡" FontSize="13" VerticalOptions="Center" />
+                    <Label Text="⚡" FontSize="12" VerticalOptions="Center" />
                     <Label Text="Retirada Expressa"
-                           FontSize="12"
+                           FontSize="11"
                            TextColor="{StaticResource BrandTextSecondary}"
                            VerticalOptions="Center" />
                 </HorizontalStackLayout>
@@ -256,9 +251,9 @@
                          VerticalOptions="Center" />
                 
                 <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
-                    <Label Text="🛡️" FontSize="13" VerticalOptions="Center" />
+                    <Label Text="🛡️" FontSize="12" VerticalOptions="Center" />
                     <Label Text="Compra Segura"
-                           FontSize="12"
+                           FontSize="11"
                            TextColor="{StaticResource BrandTextSecondary}"
                            VerticalOptions="Center" />
                 </HorizontalStackLayout>

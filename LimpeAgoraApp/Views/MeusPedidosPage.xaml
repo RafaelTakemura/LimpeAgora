@@ -88,29 +88,37 @@
                                     
                                     <VerticalStackLayout Spacing="10">
                                         
-                                        <!-- Linha Superior: Pedido #ID e Badge de Status -->
-                                        <Grid ColumnDefinitions="*, Auto" VerticalOptions="Center">
-                                            <VerticalStackLayout Grid.Column="0" Spacing="2">
-                                                <Label Text="{Binding Id, StringFormat='Pedido #{0}'}"
-                                                       FontSize="15"
+                                        <!-- Linha Superior: Pedido #ID e Badge de Status com Cor por Estado -->
+                                        <Grid ColumnDefinitions="*, Auto" ColumnSpacing="12" VerticalOptions="Center">
+                                            <VerticalStackLayout Grid.Column="0" Spacing="2" VerticalOptions="Center">
+                                                <Label Text="{Binding DataPedido, StringFormat='📅 {0:dd/MM/yyyy HH:mm}'}"
+                                                       FontSize="14"
                                                        FontAttributes="Bold"
                                                        TextColor="{StaticResource BrandTextPrimary}" />
-                                                <Label Text="{Binding DataPedido, StringFormat='📅 {0:dd/MM/yyyy HH:mm}'}"
+                                                <Label Text="{Binding Id, StringFormat='Pedido #{0}'}"
                                                        FontSize="11"
-                                                       TextColor="{StaticResource BrandTextSecondary}" />
+                                                       TextColor="{StaticResource BrandTextSecondary}"
+                                                       LineBreakMode="MiddleTruncation"
+                                                       MaxLines="1" />
                                             </VerticalStackLayout>
 
-                                            <!-- Badge de Status do Pedido -->
+                                            <!-- Badge de Status do Pedido com Cor Distinta por Estado -->
                                             <Border Grid.Column="1"
-                                                    StrokeShape="RoundRectangle 10"
-                                                    BackgroundColor="{StaticResource BrandBlueLight}"
-                                                    Stroke="{StaticResource BrandBlueBrush}"
-                                                    StrokeThickness="1"
-                                                    Padding="10,4">
+                                                    StrokeShape="RoundRectangle 12"
+                                                    BackgroundColor="{Binding Status, Converter={StaticResource StatusToBgColorConverter}}"
+                                                    Stroke="{Binding Status, Converter={StaticResource StatusToColorConverter}}"
+                                                    StrokeThickness="1.2"
+                                                    Padding="12,5"
+                                                    VerticalOptions="Center"
+                                                    HorizontalOptions="End">
                                                 <Label Text="{Binding StatusDescricao}"
                                                        FontSize="11"
                                                        FontAttributes="Bold"
-                                                       TextColor="{StaticResource BrandBlue}" />
+                                                       TextColor="{Binding Status, Converter={StaticResource StatusToColorConverter}}"
+                                                       HorizontalTextAlignment="Center"
+                                                       VerticalTextAlignment="Center"
+                                                       HorizontalOptions="Center"
+                                                       VerticalOptions="Center" />
                                             </Border>
                                         </Grid>
 
