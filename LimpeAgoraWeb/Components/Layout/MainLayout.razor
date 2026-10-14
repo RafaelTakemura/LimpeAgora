@@ -1,0 +1,55 @@
+@inherits LayoutComponentBase
+@inject AuthSessionService SessionService
+@inject NavigationManager Navigation
+
+<div class="page">
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+
+    <main>
+        <div class="top-row px-4 d-flex justify-content-between align-items-center">
+            <span class="fw-semibold text-primary">LimpeAgora — Painel Administrativo</span>
+            <div class="d-flex align-items-center gap-3">
+                @if (SessionService.IsAuthenticated && SessionService.Usuario != null)
+                {
+                    <span class="badge bg-light text-dark border">
+                        <i class="bi bi-person-circle me-1"></i> @SessionService.Usuario.NomeCompleto (@SessionService.Usuario.PerfilDescricao)
+                    </span>
+                    <button class="btn btn-outline-danger btn-sm" @onclick="FazerLogout">
+                        Sair
+                    </button>
+                }
+                else
+                {
+                    <a href="/login" class="btn btn-primary btn-sm">
+                        Entrar
+                    </a>
+                }
+            </div>
+        </div>
+
+        <article class="content px-4 py-3">
+            @Body
+        </article>
+    </main>
+</div>
+
+<div id="blazor-error-ui" data-nosnippet>
+    Ocorreu um erro inesperado no aplicativo.
+    <a href="." class="reload">Recarregar</a>
+    <span class="dismiss">🗙</span>
+</div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        SessionService.OnChange += StateHasChanged;
+    }
+
+    private void FazerLogout()
+    {
+        SessionService.EncerrarSessao();
+        Navigation.NavigateTo("/login");
+    }
+}

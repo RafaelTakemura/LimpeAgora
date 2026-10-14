@@ -1,0 +1,505 @@
+@page "/produtos"
+@rendermode InteractiveServer
+@inject ProdutoWebService ProdutoService
+@inject CategoriaWebService CategoriaService
+@inject AuthSessionService SessionService
+@inject NavigationManager Navigation
+
+<PageTitle>Produtos & Estoque — LimpeAgora</PageTitle>
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Produtos & Estoque</h2>
+            <p class="text-muted mb-0">Gerencie o catálogo de produtos e os níveis de estoque da loja</p>
+        </div>
+        <button class="btn btn-primary" @onclick="AbrirModalNovoProduto">
+            <i class="bi bi-plus-lg me-1"></i> Novo Produto
+        </button>
+    </div>
+
+    @if (!SessionService.IsAuthenticated)
+    {
+        <div class="alert alert-warning shadow-sm">
+            Você precisa estar logado para gerenciar produtos. <a href="/login" class="alert-link">Fazer login</a>.
+        </div>
+    }
+    else
+    {
+        @if (!string.IsNullOrEmpty(mensagemSucesso))
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @mensagemSucesso
+                <button type="button" class="btn-close" @onclick="() => mensagemSucesso = null"></button>
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(mensagemErro))
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @mensagemErro
+                <button type="button" class="btn-close" @onclick="() => mensagemErro = null"></button>
+            </div>
+        }
+
+        <!-- Barra de Filtros -->
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold">Filtrar por Categoria</label>
+                        <select class="form-select" @bind="filtroCategoriaId" @bind:after="CarregarProdutos">
+                            <option value="">Todas as Categorias</option>
+                            @foreach (var cat in categorias)
+                            {
+                                <option value="@cat.Id">@cat.Nome</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Status do Produto</label>
+                        <select class="form-select" @bind="filtroApenasAtivos" @bind:after="CarregarProdutos">
+                            <option value="">Todos os status</option>
+                            <option value="true">Apenas Ativos</option>
+                            <option value="false">Apenas Inativos</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button class="btn btn-outline-secondary w-100" @onclick="LimparFiltros">
+                            Limpar Filtros
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @if (carregando)
+        {
+            <div class="text-center my-5">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="mt-2 text-muted">Carregando catálogo de produtos...</p>
+            </div>
+        }
+        else
+        {
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Produto</th>
+                                    <th>Categoria</th>
+                                    <th>Apresentação</th>
+                                    <th>Preço</th>
+                                    <th>Estoque</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (produtos.Count == 0)
+                                {
+                                    <tr>
+                                        <td colspan="7" class="text-center py-4 text-muted">
+                                            Nenhum produto encontrado com os filtros selecionados.
+                                        </td>
+                                    </tr>
+                                }
+                                else
+                                {
+                                    @foreach (var prod in produtos)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <div class="fw-bold">@prod.Nome</div>
+                                                <small class="text-muted">@prod.Descricao</small>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-light text-dark border">@prod.NomeCategoria</span>
+                                            </td>
+                                            <td>@prod.Apresentacao</td>
+                                            <td class="fw-semibold text-primary">@prod.Preco.ToString("C")</td>
+                                            <td>
+                                                @if (prod.QuantidadeEstoque <= 0)
+                                                {
+                                                    <span class="badge bg-danger">Esgotado (0)</span>
+                                                }
+                                                else if (prod.QuantidadeEstoque <= 5)
+                                                {
+                                                    <span class="badge bg-warning text-dark">Baixo (@prod.QuantidadeEstoque)</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-success">@prod.QuantidadeEstoque un.</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (prod.Ativo)
+                                                {
+                                                    <span class="badge bg-success">Ativo</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-secondary">Inativo</span>
+                                                }
+                                            </td>
+                                            <td class="text-end">
+                                                <button class="btn btn-sm btn-outline-info me-1" title="Ajustar estoque ou reabastecer" @onclick="() => AbrirModalEstoque(prod)">
+                                                    Estoque
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => AbrirModalEdicao(prod)">
+                                                    Editar
+                                                </button>
+                                                @if (prod.Ativo)
+                                                {
+                                                    <button class="btn btn-sm btn-outline-danger" @onclick="() => InativarProduto(prod.Id)">
+                                                        Inativar
+                                                    </button>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+<!-- Modal de Cadastro / Edição de Produto -->
+@if (exibirModalProduto)
+{
+    <div class="modal fade show d-block" style="background-color: rgba(0,0,0,0.5);" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">@(produtoEmEdicaoId.HasValue ? "Editar Produto" : "Novo Produto")</h5>
+                    <button type="button" class="btn-close" @onclick="() => exibirModalProduto = false"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label fw-semibold">Nome do Produto</label>
+                            <input type="text" class="form-control" @bind="formNome" placeholder="Ex: Sabão Líquido Concentrado" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Categoria</label>
+                            <select class="form-select" @bind="formCategoriaId">
+                                <option value="">Selecione uma categoria...</option>
+                                @foreach (var cat in categorias.Where(c => c.Ativa))
+                                {
+                                    <option value="@cat.Id">@cat.Nome</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Descrição</label>
+                            <textarea class="form-control" rows="2" @bind="formDescricao" placeholder="Instruções e detalhes do produto..."></textarea>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Apresentação</label>
+                            <input type="text" class="form-control" @bind="formApresentacao" placeholder="Ex: 500 mL, 1 L, 5 kg" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Preço (R$)</label>
+                            <input type="number" step="0.01" class="form-control" @bind="formPreco" />
+                        </div>
+                        @if (!produtoEmEdicaoId.HasValue)
+                        {
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">Estoque Inicial</label>
+                                <input type="number" class="form-control" @bind="formQuantidadeEstoque" min="0" />
+                            </div>
+                        }
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">URL da Imagem (opcional)</label>
+                            <input type="text" class="form-control" @bind="formImagemUrl" placeholder="https://exemplo.com/imagem.png" />
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="checkProdAtivo" @bind="formAtivo" />
+                                <label class="form-check-label" for="checkProdAtivo">Produto Ativo</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="() => exibirModalProduto = false">Cancelar</button>
+                    <button type="button" class="btn btn-primary" @onclick="SalvarProduto" disabled="@salvando">
+                        @if (salvando)
+                        {
+                            <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                            <span>Salvando...</span>
+                        }
+                        else
+                        {
+                            <span>Salvar Produto</span>
+                        }
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Modal de Ajuste / Reabastecimento de Estoque -->
+@if (exibirModalEstoque && produtoSelecionadoEstoque != null)
+{
+    <div class="modal fade show d-block" style="background-color: rgba(0,0,0,0.5);" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Ajustar Estoque — @produtoSelecionadoEstoque.Nome</h5>
+                    <button type="button" class="btn-close" @onclick="() => exibirModalEstoque = false"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small">
+                        Informe a nova quantidade disponível deste produto no estoque após reabastecimento ou conferência.
+                    </p>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Quantidade Atual</label>
+                        <input type="text" class="form-control" readonly value="@produtoSelecionadoEstoque.QuantidadeEstoque un." />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Nova Quantidade em Estoque</label>
+                        <input type="number" class="form-control" @bind="novaQuantidadeEstoque" min="0" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Justificativa / Motivo</label>
+                        <input type="text" class="form-control" @bind="justificativaEstoque" placeholder="Ex: Reabastecimento semanal fornecedor..." />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="() => exibirModalEstoque = false">Cancelar</button>
+                    <button type="button" class="btn btn-success" @onclick="ConfirmarAjusteEstoque" disabled="@salvando">
+                        Confirmar Reabastecimento
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<ProdutoResponse> produtos = new();
+    private List<CategoriaResponse> categorias = new();
+    private bool carregando = true;
+    private bool salvando = false;
+
+    private string filtroCategoriaId = "";
+    private string filtroApenasAtivos = "";
+
+    private string? mensagemSucesso;
+    private string? mensagemErro;
+
+    // Estado do Modal de Produto
+    private bool exibirModalProduto = false;
+    private Guid? produtoEmEdicaoId;
+    private string formNome = "";
+    private Guid formCategoriaId;
+    private string? formDescricao;
+    private string formApresentacao = "";
+    private decimal formPreco = 0.01m;
+    private int formQuantidadeEstoque = 0;
+    private string? formImagemUrl;
+    private bool formAtivo = true;
+
+    // Estado do Modal de Estoque
+    private bool exibirModalEstoque = false;
+    private ProdutoResponse? produtoSelecionadoEstoque;
+    private int novaQuantidadeEstoque = 0;
+    private string? justificativaEstoque;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (SessionService.IsAuthenticated)
+        {
+            await CarregarCategorias();
+            await CarregarProdutos();
+        }
+        else
+        {
+            carregando = false;
+        }
+    }
+
+    private async Task CarregarCategorias()
+    {
+        try
+        {
+            categorias = await CategoriaService.ListarAsync();
+        }
+        catch (Exception ex)
+        {
+            mensagemErro = ex.Message;
+        }
+    }
+
+    private async Task CarregarProdutos()
+    {
+        carregando = true;
+        mensagemErro = null;
+
+        try
+        {
+            Guid? catId = Guid.TryParse(filtroCategoriaId, out var g) ? g : null;
+            bool? ativ = bool.TryParse(filtroApenasAtivos, out var a) ? a : null;
+
+            produtos = await ProdutoService.ListarAsync(catId, ativ);
+        }
+        catch (Exception ex)
+        {
+            mensagemErro = ex.Message;
+        }
+        finally
+        {
+            carregando = false;
+        }
+    }
+
+    private async Task LimparFiltros()
+    {
+        filtroCategoriaId = "";
+        filtroApenasAtivos = "";
+        await CarregarProdutos();
+    }
+
+    private void AbrirModalNovoProduto()
+    {
+        produtoEmEdicaoId = null;
+        formNome = "";
+        formCategoriaId = categorias.FirstOrDefault(c => c.Ativa)?.Id ?? Guid.Empty;
+        formDescricao = "";
+        formApresentacao = "";
+        formPreco = 0.01m;
+        formQuantidadeEstoque = 0;
+        formImagemUrl = null;
+        formAtivo = true;
+        exibirModalProduto = true;
+    }
+
+    private void AbrirModalEdicao(ProdutoResponse prod)
+    {
+        produtoEmEdicaoId = prod.Id;
+        formNome = prod.Nome;
+        formCategoriaId = prod.CategoriaId;
+        formDescricao = prod.Descricao;
+        formApresentacao = prod.Apresentacao;
+        formPreco = prod.Preco;
+        formImagemUrl = prod.ImagemUrl;
+        formAtivo = prod.Ativo;
+        exibirModalProduto = true;
+    }
+
+    private async Task SalvarProduto()
+    {
+        if (formCategoriaId == Guid.Empty)
+        {
+            mensagemErro = "Selecione uma categoria válida para o produto.";
+            return;
+        }
+
+        salvando = true;
+        mensagemErro = null;
+        mensagemSucesso = null;
+
+        try
+        {
+            if (produtoEmEdicaoId.HasValue)
+            {
+                var updateReq = new AtualizarProdutoRequest
+                {
+                    CategoriaId = formCategoriaId,
+                    Nome = formNome,
+                    Descricao = formDescricao,
+                    Apresentacao = formApresentacao,
+                    Preco = formPreco,
+                    ImagemUrl = formImagemUrl,
+                    Ativo = formAtivo
+                };
+                await ProdutoService.AtualizarAsync(produtoEmEdicaoId.Value, updateReq);
+                mensagemSucesso = "Produto atualizado com sucesso!";
+            }
+            else
+            {
+                var createReq = new CriarProdutoRequest
+                {
+                    CategoriaId = formCategoriaId,
+                    Nome = formNome,
+                    Descricao = formDescricao,
+                    Apresentacao = formApresentacao,
+                    Preco = formPreco,
+                    QuantidadeEstoque = formQuantidadeEstoque,
+                    ImagemUrl = formImagemUrl,
+                    Ativo = formAtivo
+                };
+                await ProdutoService.CriarAsync(createReq);
+                mensagemSucesso = "Produto cadastrado com sucesso!";
+            }
+
+            exibirModalProduto = false;
+            await CarregarProdutos();
+        }
+        catch (Exception ex)
+        {
+            mensagemErro = ex.Message;
+        }
+        finally
+        {
+            salvando = false;
+        }
+    }
+
+    private void AbrirModalEstoque(ProdutoResponse prod)
+    {
+        produtoSelecionadoEstoque = prod;
+        novaQuantidadeEstoque = prod.QuantidadeEstoque;
+        justificativaEstoque = "Reabastecimento de estoque";
+        exibirModalEstoque = true;
+    }
+
+    private async Task ConfirmarAjusteEstoque()
+    {
+        if (produtoSelecionadoEstoque == null) return;
+
+        salvando = true;
+        try
+        {
+            var req = new AjustarEstoqueRequest
+            {
+                NovaQuantidade = novaQuantidadeEstoque,
+                Justificativa = justificativaEstoque
+            };
+            await ProdutoService.AjustarEstoqueAsync(produtoSelecionadoEstoque.Id, req);
+            mensagemSucesso = $"Estoque do produto '{produtoSelecionadoEstoque.Nome}' atualizado com sucesso!";
+            exibirModalEstoque = false;
+            await CarregarProdutos();
+        }
+        catch (Exception ex)
+        {
+            mensagemErro = ex.Message;
+        }
+        finally
+        {
+            salvando = false;
+        }
+    }
+
+    private async Task InativarProduto(Guid id)
+    {
+        try
+        {
+            await ProdutoService.InativarAsync(id);
+            mensagemSucesso = "Produto inativado com sucesso.";
+            await CarregarProdutos();
+        }
+        catch (Exception ex)
+        {
+            mensagemErro = ex.Message;
+        }
+    }
+}

@@ -1,0 +1,325 @@
+@page "/usuarios"
+@rendermode InteractiveServer
+@inject UsuarioWebService UsuarioService
+@inject AuthSessionService SessionService
+@inject NavigationManager Navigation
+
+<PageTitle>Usuários — LimpeAgora</PageTitle>
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Gestão de Usuários</h2>
+            <p class="text-muted mb-0">Controle de acessos, perfis e contas de colaboradores e clientes</p>
+        </div>
+        @if (SessionService.IsAdmin)
+        {
+            <button class="btn btn-primary" @onclick="AbrirModalNovoUsuario">
+                <i class="bi bi-person-plus me-1"></i> Novo Usuário
+            </button>
+        }
+    </div>
+
+    @if (!SessionService.IsAdmin)
+    {
+        <div class="alert alert-danger shadow-sm">
+            <strong>Acesso Negado:</strong> Esta seção é restrita aos administradores da loja.
+        </div>
+    }
+    else
+    {
+        @if (!string.IsNullOrEmpty(mensagemSucesso))
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @mensagemSucesso
+                <button type="button" class="btn-close" @onclick="() => mensagemSucesso = null"></button>
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(mensagemErro))
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @mensagemErro
+                <button type="button" class="btn-close" @onclick="() => mensagemErro = null"></button>
+            </div>
+        }
+
+        @if (carregando)
+        {
+            <div class="text-center my-5">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="mt-2 text-muted">Carregando lista de usuários...</p>
+            </div>
+        }
+        else
+        {
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Nome Completo</th>
+                                    <th>E-mail</th>
+                                    <th>Telefone</th>
+                                    <th>Perfil</th>
+                                    <th>Status</th>
+                                    <th>Data Cadastro</th>
+                                    <th class="text-end">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var u in usuarios)
+                                {
+                                    <tr>
+                                        <td class="fw-semibold">@u.NomeCompleto</td>
+                                        <td>@u.Email</td>
+                                        <td>@u.Telefone</td>
+                                        <td>
+                                            @if (u.Perfil == PerfilUsuario.Administrador)
+                                            {
+                                                <span class="badge bg-danger">Administrador</span>
+                                            }
+                                            else if (u.Perfil == PerfilUsuario.Funcionario)
+                                            {
+                                                <span class="badge bg-primary">Funcionário</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">Cliente</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (u.Ativo)
+                                            {
+                                                <span class="badge bg-success">Ativo</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">Inativo</span>
+                                            }
+                                        </td>
+                                        <td>@u.CriadoEm.ToLocalTime().ToString("dd/MM/yyyy")</td>
+                                        <td class="text-end">
+                                            <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => AbrirModalEdicao(u)">
+                                                Editar
+                                            </button>
+                                            @if (u.Ativo && u.Id != SessionService.Usuario?.Id)
+                                            {
+                                                <button class="btn btn-sm btn-outline-danger" @onclick="() => InativarUsuario(u.Id)">
+                                                    Inativar
+                                                </button>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+<!-- Modal de Criação / Edição de Usuário -->
+@if (exibirModal)
+{
+    <div class="modal fade show d-block" style="background-color: rgba(0,0,0,0.5);" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">@(usuarioEmEdicaoId.HasValue ? "Editar Usuário" : "Novo Usuário")</h5>
+                    <button type="button" class="btn-close" @onclick="() => exibirModal = false"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Nome Completo</label>
+                        <input type="text" class="form-control" @bind="formNome" placeholder="Nome do usuário..." />
+                    </div>
+
+                    @if (!usuarioEmEdicaoId.HasValue)
+                    {
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">E-mail</label>
+                            <input type="email" class="form-control" @bind="formEmail" placeholder="email@exemplo.com" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Senha Inicial</label>
+                            <input type="password" class="form-control" @bind="formSenha" placeholder="Mínimo 6 caracteres" />
+                        </div>
+                    }
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Telefone</label>
+                        <input type="text" class="form-control" @bind="formTelefone" placeholder="(00) 00000-0000" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Perfil de Acesso</label>
+                        <select class="form-select" @bind="formPerfil">
+                            <option value="@PerfilUsuario.Funcionario">Funcionário</option>
+                            <option value="@PerfilUsuario.Administrador">Administrador</option>
+                            <option value="@PerfilUsuario.Cliente">Cliente</option>
+                        </select>
+                    </div>
+
+                    @if (usuarioEmEdicaoId.HasValue)
+                    {
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="checkUsuAtivo" @bind="formAtivo" />
+                            <label class="form-check-label" for="checkUsuAtivo">Conta Ativa</label>
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="() => exibirModal = false">Cancelar</button>
+                    <button type="button" class="btn btn-primary" @onclick="SalvarUsuario" disabled="@salvando">
+                        @if (salvando)
+                        {
+                            <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                            <span>Salvando...</span>
+                        }
+                        else
+                        {
+                            <span>Salvar</span>
+                        }
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<UsuarioResponse> usuarios = new();
+    private bool carregando = true;
+    private bool salvando = false;
+    private bool exibirModal = false;
+
+    private Guid? usuarioEmEdicaoId;
+    private string formNome = "";
+    private string formEmail = "";
+    private string formTelefone = "";
+    private string formSenha = "";
+    private PerfilUsuario formPerfil = PerfilUsuario.Funcionario;
+    private bool formAtivo = true;
+
+    private string? mensagemSucesso;
+    private string? mensagemErro;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (SessionService.IsAdmin)
+        {
+            await CarregarUsuarios();
+        }
+        else
+        {
+            carregando = false;
+        }
+    }
+
+    private async Task CarregarUsuarios()
+    {
+        carregando = true;
+        mensagemErro = null;
+
+        try
+        {
+            usuarios = await UsuarioService.ListarAsync();
+        }
+        catch (Exception ex)
+        {
+            mensagemErro = ex.Message;
+        }
+        finally
+        {
+            carregando = false;
+        }
+    }
+
+    private void AbrirModalNovoUsuario()
+    {
+        usuarioEmEdicaoId = null;
+        formNome = "";
+        formEmail = "";
+        formTelefone = "";
+        formSenha = "";
+        formPerfil = PerfilUsuario.Funcionario;
+        formAtivo = true;
+        exibirModal = true;
+    }
+
+    private void AbrirModalEdicao(UsuarioResponse u)
+    {
+        usuarioEmEdicaoId = u.Id;
+        formNome = u.NomeCompleto;
+        formEmail = u.Email;
+        formTelefone = u.Telefone;
+        formPerfil = u.Perfil;
+        formAtivo = u.Ativo;
+        exibirModal = true;
+    }
+
+    private async Task SalvarUsuario()
+    {
+        salvando = true;
+        mensagemErro = null;
+        mensagemSucesso = null;
+
+        try
+        {
+            if (usuarioEmEdicaoId.HasValue)
+            {
+                var req = new AtualizarUsuarioRequest
+                {
+                    NomeCompleto = formNome,
+                    Telefone = formTelefone,
+                    Perfil = formPerfil,
+                    Ativo = formAtivo
+                };
+                await UsuarioService.AtualizarAsync(usuarioEmEdicaoId.Value, req);
+                mensagemSucesso = "Usuário atualizado com sucesso!";
+            }
+            else
+            {
+                var req = new CriarUsuarioRequest
+                {
+                    NomeCompleto = formNome,
+                    Email = formEmail,
+                    Telefone = formTelefone,
+                    Senha = formSenha,
+                    Perfil = formPerfil
+                };
+                await UsuarioService.CriarAsync(req);
+                mensagemSucesso = "Novo usuário cadastrado com sucesso!";
+            }
+
+            exibirModal = false;
+            await CarregarUsuarios();
+        }
+        catch (Exception ex)
+        {
+            mensagemErro = ex.Message;
+        }
+        finally
+        {
+            salvando = false;
+        }
+    }
+
+    private async Task InativarUsuario(Guid id)
+    {
+        try
+        {
+            await UsuarioService.InativarAsync(id);
+            mensagemSucesso = "Usuário inativado com sucesso.";
+            await CarregarUsuarios();
+        }
+        catch (Exception ex)
+        {
+            mensagemErro = ex.Message;
+        }
+    }
+}

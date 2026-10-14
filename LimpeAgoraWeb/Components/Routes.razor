@@ -1,0 +1,17 @@
+<Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(Pages.NotFound)">
+    <Found Context="routeData">
+        <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)">
+            <NotAuthorized>
+                <div class="container mt-5">
+                    <div class="alert alert-warning shadow-sm">
+                        <h4 class="alert-heading">Acesso Restrito</h4>
+                        <p>Você precisa realizar o login com uma conta de funcionário ou administrador para acessar este recurso.</p>
+                        <hr />
+                        <a href="/login" class="btn btn-primary">Fazer Login</a>
+                    </div>
+                </div>
+            </NotAuthorized>
+        </AuthorizeRouteView>
+        <FocusOnNavigate RouteData="routeData" Selector="h1" />
+    </Found>
+</Router>

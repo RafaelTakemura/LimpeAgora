@@ -1,0 +1,191 @@
+@page "/pedidos"
+@rendermode InteractiveServer
+@inject PedidoWebService PedidoService
+@inject AuthSessionService SessionService
+@inject NavigationManager Navigation
+
+<PageTitle>Pedidos — LimpeAgora</PageTitle>
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Gerenciamento de Pedidos</h2>
+            <p class="text-muted mb-0">Acompanhe todos os pedidos da loja, atualize status e visualize históricos</p>
+        </div>
+        <button class="btn btn-outline-primary btn-sm" @onclick="CarregarPedidos">
+            <i class="bi bi-arrow-clockwise me-1"></i> Atualizar Lista
+        </button>
+    </div>
+
+    @if (!SessionService.IsAuthenticated)
+    {
+        <div class="alert alert-warning shadow-sm">
+            Você precisa estar logado para consultar pedidos. <a href="/login" class="alert-link">Fazer login</a>.
+        </div>
+    }
+    else
+    {
+        @if (!string.IsNullOrEmpty(mensagemErro))
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @mensagemErro
+                <button type="button" class="btn-close" @onclick="() => mensagemErro = null"></button>
+            </div>
+        }
+
+        <!-- Filtros de Consulta -->
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold">Filtrar por Status</label>
+                        <select class="form-select" @bind="filtroStatus" @bind:after="CarregarPedidos">
+                            <option value="">Todos os Status</option>
+                            <option value="@StatusPedido.Pendente">Pendente</option>
+                            <option value="@StatusPedido.EmPreparacao">Em Preparação</option>
+                            <option value="@StatusPedido.ProntoParaRetirada">Pronto para Retirada</option>
+                            <option value="@StatusPedido.Concluido">Concluído</option>
+                            <option value="@StatusPedido.Cancelado">Cancelado</option>
+                        </select>
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label small fw-semibold">Buscar por Nome do Cliente</label>
+                        <input type="text" class="form-control" @bind="filtroCliente" @bind:event="oninput" placeholder="Digite o nome do cliente..." />
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-outline-secondary w-100" @onclick="LimparFiltros">
+                            Limpar Filtros
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @if (carregando)
+        {
+            <div class="text-center my-5">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="mt-2 text-muted">Carregando pedidos...</p>
+            </div>
+        }
+        else
+        {
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Data / Hora</th>
+                                    <th>Cliente</th>
+                                    <th>Qtd. Itens</th>
+                                    <th>Valor Total</th>
+                                    <th>Status Atual</th>
+                                    <th class="text-end">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    var pedidosFiltrados = string.IsNullOrWhiteSpace(filtroCliente)
+                                        ? pedidos
+                                        : pedidos.Where(p => p.NomeCliente.Contains(filtroCliente, StringComparison.OrdinalIgnoreCase)).ToList();
+                                }
+
+                                @if (pedidosFiltrados.Count == 0)
+                                {
+                                    <tr>
+                                        <td colspan="6" class="text-center py-4 text-muted">
+                                            Nenhum pedido encontrado para os filtros selecionados.
+                                        </td>
+                                    </tr>
+                                }
+                                else
+                                {
+                                    @foreach (var pedido in pedidosFiltrados)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <div class="fw-semibold">@pedido.DataPedido.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</div>
+                                                <small class="text-muted">#@pedido.Id.ToString().Substring(0, 8)</small>
+                                            </td>
+                                            <td class="fw-bold">@pedido.NomeCliente</td>
+                                            <td>@pedido.TotalItens un.</td>
+                                            <td class="fw-bold text-primary">@pedido.ValorTotal.ToString("C")</td>
+                                            <td>
+                                                <span class="badge @ObterClasseBadge(pedido.Status)">
+                                                    @pedido.StatusDescricao
+                                                </span>
+                                            </td>
+                                            <td class="text-end">
+                                                <a href="/pedidos/@pedido.Id" class="btn btn-sm btn-primary">
+                                                    Ver Detalhes
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    private List<PedidoResumoResponse> pedidos = new();
+    private bool carregando = true;
+    private string filtroStatus = "";
+    private string filtroCliente = "";
+    private string? mensagemErro;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (SessionService.IsAuthenticated)
+        {
+            await CarregarPedidos();
+        }
+        else
+        {
+            carregando = false;
+        }
+    }
+
+    private async Task CarregarPedidos()
+    {
+        carregando = true;
+        mensagemErro = null;
+
+        try
+        {
+            StatusPedido? st = Enum.TryParse<StatusPedido>(filtroStatus, out var val) ? val : null;
+            pedidos = await PedidoService.ListarTodosAsync(status: st);
+        }
+        catch (Exception ex)
+        {
+            mensagemErro = ex.Message;
+        }
+        finally
+        {
+            carregando = false;
+        }
+    }
+
+    private async Task LimparFiltros()
+    {
+        filtroStatus = "";
+        filtroCliente = "";
+        await CarregarPedidos();
+    }
+
+    private string ObterClasseBadge(StatusPedido status) => status switch
+    {
+        StatusPedido.Pendente => "bg-warning text-dark",
+        StatusPedido.EmPreparacao => "bg-info text-dark",
+        StatusPedido.ProntoParaRetirada => "bg-primary",
+        StatusPedido.Concluido => "bg-success",
+        StatusPedido.Cancelado => "bg-danger",
+        _ => "bg-secondary"
+    };
+}

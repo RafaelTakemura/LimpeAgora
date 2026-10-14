@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:LimpeAgoraApp.ViewModels"
+             x:Class="LimpeAgoraApp.Views.LoginPage"
+             x:DataType="vm:LoginViewModel"
+             Title="{Binding Titulo}"
+             Shell.NavBarIsVisible="False">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="30" Spacing="20" VerticalOptions="Center">
+            
+            <!-- Logo / Cabeçalho -->
+            <VerticalStackLayout Spacing="6" HorizontalOptions="Center">
+                <Label Text="LimpeAgora"
+                       FontSize="36"
+                       FontAttributes="Bold"
+                       TextColor="{StaticResource Primary}"
+                       HorizontalOptions="Center" />
+                <Label Text="Produtos de Limpeza para sua Casa ou Empresa"
+                       FontSize="14"
+                       TextColor="Gray"
+                       HorizontalOptions="Center"
+                       HorizontalTextAlignment="Center" />
+            </VerticalStackLayout>
+
+            <!-- Card de Login -->
+            <Border StrokeShape="RoundRectangle 16"
+                    Stroke="{StaticResource PrimaryBrush}"
+                    StrokeThickness="1"
+                    Padding="24"
+                    BackgroundColor="{AppThemeBinding Light=White, Dark=#2C2C2C}">
+                
+                <VerticalStackLayout Spacing="16">
+                    <Label Text="Entrar na sua Conta"
+                           FontSize="20"
+                           FontAttributes="Bold"
+                           HorizontalOptions="Center" />
+
+                    <!-- Alerta de Erro -->
+                    <Border IsVisible="{Binding MensagemErro, Converter={StaticResource StringToBooleanConverter}}"
+                            BackgroundColor="#FFEBEE"
+                            Stroke="#E53935"
+                            Padding="12"
+                            StrokeShape="RoundRectangle 8">
+                        <Label Text="{Binding MensagemErro}" TextColor="#C62828" FontSize="13" />
+                    </Border>
+
+                    <!-- Campo E-mail -->
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="E-mail" FontSize="13" FontAttributes="Bold" />
+                        <Entry Placeholder="seu@email.com"
+                               Keyboard="Email"
+                               Text="{Binding Email}" />
+                    </VerticalStackLayout>
+
+                    <!-- Campo Senha -->
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Senha" FontSize="13" FontAttributes="Bold" />
+                        <Entry Placeholder="Sua senha"
+                               IsPassword="True"
+                               Text="{Binding Senha}" />
+                    </VerticalStackLayout>
+
+                    <!-- Botão Entrar -->
+                    <Button Text="Entrar"
+                            Command="{Binding RealizarLoginCommand}"
+                            IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}"
+                            BackgroundColor="{StaticResource Primary}"
+                            TextColor="White"
+                            FontAttributes="Bold"
+                            CornerRadius="8"
+                            HeightRequest="48"
+                            Margin="0,10,0,0" />
+
+                    <ActivityIndicator IsRunning="{Binding IsBusy}"
+                                       IsVisible="{Binding IsBusy}"
+                                       HorizontalOptions="Center" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Rodapé / Cadastro -->
+            <HorizontalStackLayout HorizontalOptions="Center" Spacing="6">
+                <Label Text="Não tem uma conta?" TextColor="Gray" VerticalOptions="Center" />
+                <Button Text="Cadastre-se"
+                        Command="{Binding IrParaCadastroCommand}"
+                        Background="Transparent"
+                        TextColor="{StaticResource Primary}"
+                        FontAttributes="Bold"
+                        Padding="0" />
+            </HorizontalStackLayout>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

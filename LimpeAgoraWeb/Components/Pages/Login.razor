@@ -1,0 +1,95 @@
+@page "/login"
+@rendermode InteractiveServer
+@inject AuthWebService AuthService
+@inject AuthSessionService SessionService
+@inject NavigationManager Navigation
+
+<PageTitle>Login — LimpeAgora</PageTitle>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white text-center py-3">
+                    <h4 class="mb-0 fw-bold">LimpeAgora</h4>
+                    <small>Painel Administrativo da Loja</small>
+                </div>
+                <div class="card-body p-4">
+                    @if (!string.IsNullOrEmpty(mensagemErro))
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            @mensagemErro
+                        </div>
+                    }
+
+                    <EditForm Model="loginModel" OnValidSubmit="RealizarLogin">
+                        <DataAnnotationsValidator />
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">E-mail</label>
+                            <InputText @bind-Value="loginModel.Email" class="form-control" placeholder="nome@exemplo.com" />
+                            <ValidationMessage For="@(() => loginModel.Email)" class="text-danger small" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Senha</label>
+                            <InputText @bind-Value="loginModel.Senha" type="password" class="form-control" placeholder="••••••••" />
+                            <ValidationMessage For="@(() => loginModel.Senha)" class="text-danger small" />
+                        </div>
+
+                        <div class="d-grid mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg" disabled="@carregando">
+                                @if (carregando)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                    <span>Entrando...</span>
+                                }
+                                else
+                                {
+                                    <span>Entrar no Sistema</span>
+                                }
+                            </button>
+                        </div>
+                    </EditForm>
+                </div>
+                <div class="card-footer bg-light text-center py-3 text-muted small">
+                    Acesso exclusivo para funcionários e administradores.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private LoginRequest loginModel = new();
+    private string? mensagemErro;
+    private bool carregando = false;
+
+    private async Task RealizarLogin()
+    {
+        carregando = true;
+        mensagemErro = null;
+
+        try
+        {
+            var authResponse = await AuthService.LoginAsync(loginModel);
+
+            if (authResponse.Usuario.Perfil == PerfilUsuario.Cliente)
+            {
+                SessionService.EncerrarSessao();
+                mensagemErro = "Este painel é restrito a colaboradores. Clientes devem acessar pelo aplicativo mobile.";
+                return;
+            }
+
+            Navigation.NavigateTo("/");
+        }
+        catch (Exception ex)
+        {
+            mensagemErro = ex.Message;
+        }
+        finally
+        {
+            carregando = false;
+        }
+    }
+}

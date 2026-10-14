@@ -1,0 +1,212 @@
+@page "/"
+@rendermode InteractiveServer
+@inject PedidoWebService PedidoService
+@inject AuthSessionService SessionService
+@inject NavigationManager Navigation
+
+<PageTitle>Dashboard — LimpeAgora</PageTitle>
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Painel de Controle</h2>
+            <p class="text-muted mb-0">Visão geral dos pedidos e operações da loja</p>
+        </div>
+        <button class="btn btn-outline-primary btn-sm" @onclick="CarregarDados">
+            <i class="bi bi-arrow-clockwise"></i> Atualizar Dados
+        </button>
+    </div>
+
+    @if (!SessionService.IsAuthenticated)
+    {
+        <div class="alert alert-warning shadow-sm d-flex justify-content-between align-items-center">
+            <div>
+                <strong>Você não está autenticado!</strong> Faça login para gerenciar pedidos, produtos e categorias.
+            </div>
+            <a href="/login" class="btn btn-primary btn-sm">Fazer Login</a>
+        </div>
+    }
+    else
+    {
+        @if (carregando)
+        {
+            <div class="text-center my-5">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="mt-2 text-muted">Carregando indicadores...</p>
+            </div>
+        }
+        else if (!string.IsNullOrEmpty(mensagemErro))
+        {
+            <div class="alert alert-danger" role="alert">
+                @mensagemErro
+            </div>
+        }
+        else
+        {
+            <!-- Cards de Métricas de Status -->
+            <div class="row g-3 mb-4">
+                <div class="col-sm-6 col-xl-3">
+                    <div class="card border-0 shadow-sm border-start border-warning border-4">
+                        <div class="card-body">
+                            <div class="text-muted small text-uppercase fw-bold">Pendentes</div>
+                            <div class="fs-2 fw-bold text-warning">@contagemPendentes</div>
+                            <small class="text-muted">Aguardando início do preparo</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-sm-6 col-xl-3">
+                    <div class="card border-0 shadow-sm border-start border-info border-4">
+                        <div class="card-body">
+                            <div class="text-muted small text-uppercase fw-bold">Em Preparação</div>
+                            <div class="fs-2 fw-bold text-info">@contagemEmPreparacao</div>
+                            <small class="text-muted">Sendo separados no estoque</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-sm-6 col-xl-3">
+                    <div class="card border-0 shadow-sm border-start border-primary border-4">
+                        <div class="card-body">
+                            <div class="text-muted small text-uppercase fw-bold">Prontos p/ Retirada</div>
+                            <div class="fs-2 fw-bold text-primary">@contagemProntos</div>
+                            <small class="text-muted">Aguardando cliente no balcão</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-sm-6 col-xl-3">
+                    <div class="card border-0 shadow-sm border-start border-success border-4">
+                        <div class="card-body">
+                            <div class="text-muted small text-uppercase fw-bold">Concluídos</div>
+                            <div class="fs-2 fw-bold text-success">@contagemConcluidos</div>
+                            <small class="text-muted">Pagos e entregues ao cliente</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pedidos Recentes -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold">Pedidos Recentes</h5>
+                    <a href="/pedidos" class="btn btn-sm btn-outline-primary">Ver Todos os Pedidos</a>
+                </div>
+                <div class="card-body p-0">
+                    @if (pedidosRecentes.Count == 0)
+                    {
+                        <div class="p-4 text-center text-muted">
+                            Nenhum pedido registrado no sistema até o momento.
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Data/Hora</th>
+                                        <th>Cliente</th>
+                                        <th>Itens</th>
+                                        <th>Total</th>
+                                        <th>Status</th>
+                                        <th class="text-end">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var pedido in pedidosRecentes.Take(7))
+                                    {
+                                        <tr>
+                                            <td>@pedido.DataPedido.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                                            <td class="fw-semibold">@pedido.NomeCliente</td>
+                                            <td>@pedido.TotalItens un.</td>
+                                            <td class="fw-bold text-primary">@pedido.ValorTotal.ToString("C")</td>
+                                            <td>
+                                                <span class="badge @ObterClasseBadgeStatus(pedido.Status)">
+                                                    @pedido.StatusDescricao
+                                                </span>
+                                            </td>
+                                            <td class="text-end">
+                                                <a href="/pedidos/@pedido.Id" class="btn btn-sm btn-outline-secondary">
+                                                    Detalhes
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    private bool carregando = true;
+    private string? mensagemErro;
+
+    private int contagemPendentes = 0;
+    private int contagemEmPreparacao = 0;
+    private int contagemProntos = 0;
+    private int contagemConcluidos = 0;
+
+    private List<PedidoResumoResponse> pedidosRecentes = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        SessionService.OnChange += async () =>
+        {
+            if (SessionService.IsAuthenticated)
+            {
+                await CarregarDados();
+                await InvokeAsync(StateHasChanged);
+            }
+        };
+
+        if (SessionService.IsAuthenticated)
+        {
+            await CarregarDados();
+        }
+        else
+        {
+            carregando = false;
+        }
+    }
+
+    private async Task CarregarDados()
+    {
+        carregando = true;
+        mensagemErro = null;
+
+        try
+        {
+            var pedidos = await PedidoService.ListarTodosAsync();
+            pedidosRecentes = pedidos;
+
+            contagemPendentes = pedidos.Count(p => p.Status == StatusPedido.Pendente);
+            contagemEmPreparacao = pedidos.Count(p => p.Status == StatusPedido.EmPreparacao);
+            contagemProntos = pedidos.Count(p => p.Status == StatusPedido.ProntoParaRetirada);
+            contagemConcluidos = pedidos.Count(p => p.Status == StatusPedido.Concluido);
+        }
+        catch (Exception ex)
+        {
+            mensagemErro = ex.Message;
+        }
+        finally
+        {
+            carregando = false;
+        }
+    }
+
+    private string ObterClasseBadgeStatus(StatusPedido status) => status switch
+    {
+        StatusPedido.Pendente => "bg-warning text-dark",
+        StatusPedido.EmPreparacao => "bg-info text-dark",
+        StatusPedido.ProntoParaRetirada => "bg-primary",
+        StatusPedido.Concluido => "bg-success",
+        StatusPedido.Cancelado => "bg-danger",
+        _ => "bg-secondary"
+    };
+}

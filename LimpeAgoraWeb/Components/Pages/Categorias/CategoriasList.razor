@@ -1,0 +1,277 @@
+@page "/categorias"
+@rendermode InteractiveServer
+@inject CategoriaWebService CategoriaService
+@inject AuthSessionService SessionService
+@inject NavigationManager Navigation
+
+<PageTitle>Categorias — LimpeAgora</PageTitle>
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Categorias</h2>
+            <p class="text-muted mb-0">Gerencie as categorias de produtos de limpeza da loja</p>
+        </div>
+        <button class="btn btn-primary" @onclick="AbrirModalCriacao">
+            <i class="bi bi-plus-lg me-1"></i> Nova Categoria
+        </button>
+    </div>
+
+    @if (!SessionService.IsAuthenticated)
+    {
+        <div class="alert alert-warning shadow-sm">
+            Você precisa estar logado para gerenciar categorias. <a href="/login" class="alert-link">Fazer login</a>.
+        </div>
+    }
+    else
+    {
+        @if (!string.IsNullOrEmpty(mensagemSucesso))
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @mensagemSucesso
+                <button type="button" class="btn-close" @onclick="() => mensagemSucesso = null"></button>
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(mensagemErro))
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @mensagemErro
+                <button type="button" class="btn-close" @onclick="() => mensagemErro = null"></button>
+            </div>
+        }
+
+        @if (carregando)
+        {
+            <div class="text-center my-5">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="mt-2 text-muted">Carregando categorias...</p>
+            </div>
+        }
+        else
+        {
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Descrição</th>
+                                    <th>Status</th>
+                                    <th>Criada em</th>
+                                    <th class="text-end">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (categorias.Count == 0)
+                                {
+                                    <tr>
+                                        <td colspan="5" class="text-center py-4 text-muted">
+                                            Nenhuma categoria cadastrada.
+                                        </td>
+                                    </tr>
+                                }
+                                else
+                                {
+                                    @foreach (var cat in categorias)
+                                    {
+                                        <tr>
+                                            <td class="fw-semibold">@cat.Nome</td>
+                                            <td class="text-muted">@(string.IsNullOrWhiteSpace(cat.Descricao) ? "—" : cat.Descricao)</td>
+                                            <td>
+                                                @if (cat.Ativa)
+                                                {
+                                                    <span class="badge bg-success">Ativa</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-secondary">Inativa</span>
+                                                }
+                                            </td>
+                                            <td>@cat.CriadoEm.ToLocalTime().ToString("dd/MM/yyyy")</td>
+                                            <td class="text-end">
+                                                <button class="btn btn-sm btn-outline-primary me-2" @onclick="() => AbrirModalEdicao(cat)">
+                                                    Editar
+                                                </button>
+                                                @if (cat.Ativa)
+                                                {
+                                                    <button class="btn btn-sm btn-outline-danger" @onclick="() => InativarCategoria(cat.Id)">
+                                                        Inativar
+                                                    </button>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+<!-- Modal / Card de Criação e Edição -->
+@if (exibirModal)
+{
+    <div class="modal fade show d-block" style="background-color: rgba(0,0,0,0.5);" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">@(categoriaEmEdicaoId.HasValue ? "Editar Categoria" : "Nova Categoria")</h5>
+                    <button type="button" class="btn-close" @onclick="FecharModal"></button>
+                </div>
+                <EditForm Model="formModel" OnValidSubmit="SalvarCategoria">
+                    <DataAnnotationsValidator />
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Nome da Categoria</label>
+                            <InputText @bind-Value="formModel.Nome" class="form-control" placeholder="Ex: Desinfetantes, Sabões..." />
+                            <ValidationMessage For="@(() => formModel.Nome)" class="text-danger small" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Descrição</label>
+                            <InputTextArea @bind-Value="formModel.Descricao" rows="3" class="form-control" placeholder="Breve descrição da categoria..." />
+                            <ValidationMessage For="@(() => formModel.Descricao)" class="text-danger small" />
+                        </div>
+
+                        <div class="form-check form-switch mb-3">
+                            <InputCheckbox @bind-Value="formModel.Ativa" class="form-check-input" id="checkAtiva" />
+                            <label class="form-check-label" for="checkAtiva">Categoria Ativa</label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @onclick="FecharModal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary" disabled="@salvando">
+                            @if (salvando)
+                            {
+                                <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                                <span>Salvando...</span>
+                            }
+                            else
+                            {
+                                <span>Salvar</span>
+                            }
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<CategoriaResponse> categorias = new();
+    private bool carregando = true;
+    private bool salvando = false;
+    private bool exibirModal = false;
+    private Guid? categoriaEmEdicaoId;
+    private CategoriaUpsertRequest formModel = new();
+    private string? mensagemSucesso;
+    private string? mensagemErro;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (SessionService.IsAuthenticated)
+        {
+            await CarregarCategorias();
+        }
+        else
+        {
+            carregando = false;
+        }
+    }
+
+    private async Task CarregarCategorias()
+    {
+        carregando = true;
+        mensagemErro = null;
+
+        try
+        {
+            categorias = await CategoriaService.ListarAsync();
+        }
+        catch (Exception ex)
+        {
+            mensagemErro = ex.Message;
+        }
+        finally
+        {
+            carregando = false;
+        }
+    }
+
+    private void AbrirModalCriacao()
+    {
+        categoriaEmEdicaoId = null;
+        formModel = new CategoriaUpsertRequest { Ativa = true };
+        exibirModal = true;
+    }
+
+    private void AbrirModalEdicao(CategoriaResponse cat)
+    {
+        categoriaEmEdicaoId = cat.Id;
+        formModel = new CategoriaUpsertRequest
+        {
+            Nome = cat.Nome,
+            Descricao = cat.Descricao,
+            Ativa = cat.Ativa
+        };
+        exibirModal = true;
+    }
+
+    private void FecharModal()
+    {
+        exibirModal = false;
+        categoriaEmEdicaoId = null;
+    }
+
+    private async Task SalvarCategoria()
+    {
+        salvando = true;
+        mensagemErro = null;
+        mensagemSucesso = null;
+
+        try
+        {
+            if (categoriaEmEdicaoId.HasValue)
+            {
+                await CategoriaService.AtualizarAsync(categoriaEmEdicaoId.Value, formModel);
+                mensagemSucesso = "Categoria atualizada com sucesso!";
+            }
+            else
+            {
+                await CategoriaService.CriarAsync(formModel);
+                mensagemSucesso = "Categoria criada com sucesso!";
+            }
+
+            FecharModal();
+            await CarregarCategorias();
+        }
+        catch (Exception ex)
+        {
+            mensagemErro = ex.Message;
+        }
+        finally
+        {
+            salvando = false;
+        }
+    }
+
+    private async Task InativarCategoria(Guid id)
+    {
+        try
+        {
+            await CategoriaService.InativarAsync(id);
+            mensagemSucesso = "Categoria inativada com sucesso.";
+            await CarregarCategorias();
+        }
+        catch (Exception ex)
+        {
+            mensagemErro = ex.Message;
+        }
+    }
+}

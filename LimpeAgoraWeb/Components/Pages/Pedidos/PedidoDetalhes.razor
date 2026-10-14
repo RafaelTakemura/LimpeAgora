@@ -1,0 +1,319 @@
+@page "/pedidos/{id:guid}"
+@rendermode InteractiveServer
+@inject PedidoWebService PedidoService
+@inject AuthSessionService SessionService
+@inject NavigationManager Navigation
+
+<PageTitle>Detalhes do Pedido — LimpeAgora</PageTitle>
+
+<div class="container-fluid">
+    <div class="mb-4">
+        <a href="/pedidos" class="btn btn-outline-secondary btn-sm mb-2">
+            <i class="bi bi-arrow-left"></i> Voltar para Lista de Pedidos
+        </a>
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="fw-bold mb-0">Detalhes do Pedido</h2>
+                <small class="text-muted">ID: @Id</small>
+            </div>
+            @if (pedido != null)
+            {
+                <span class="badge fs-6 @ObterClasseBadge(pedido.Status)">
+                    @pedido.StatusDescricao
+                </span>
+            }
+        </div>
+    </div>
+
+    @if (!SessionService.IsAuthenticated)
+    {
+        <div class="alert alert-warning shadow-sm">
+            Você precisa estar logado para consultar pedidos. <a href="/login" class="alert-link">Fazer login</a>.
+        </div>
+    }
+    else
+    {
+        @if (!string.IsNullOrEmpty(mensagemSucesso))
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @mensagemSucesso
+                <button type="button" class="btn-close" @onclick="() => mensagemSucesso = null"></button>
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(mensagemErro))
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @mensagemErro
+                <button type="button" class="btn-close" @onclick="() => mensagemErro = null"></button>
+            </div>
+        }
+
+        @if (carregando)
+        {
+            <div class="text-center my-5">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="mt-2 text-muted">Carregando detalhes do pedido...</p>
+            </div>
+        }
+        else if (pedido != null)
+        {
+            <div class="row g-4">
+                <!-- Coluna Principal: Itens do Pedido (Imutáveis) -->
+                <div class="col-lg-8">
+                    <div class="card shadow-sm border-0 mb-4">
+                        <div class="card-header bg-white py-3">
+                            <h5 class="mb-0 fw-bold">Produtos Solicitados</h5>
+                            <small class="text-muted">Itens imutáveis registrados no momento da confirmação</small>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Produto</th>
+                                            <th class="text-center">Quantidade</th>
+                                            <th class="text-end">Preço Unitário</th>
+                                            <th class="text-end">Subtotal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in pedido.Itens)
+                                        {
+                                            <tr>
+                                                <td class="fw-semibold">@item.NomeProduto</td>
+                                                <td class="text-center">@item.Quantidade un.</td>
+                                                <td class="text-end text-muted">@item.PrecoUnitario.ToString("C")</td>
+                                                <td class="text-end fw-bold text-primary">@item.Subtotal.ToString("C")</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                    <tfoot class="table-light">
+                                        <tr>
+                                            <td colspan="3" class="text-end fw-bold fs-5">Valor Total:</td>
+                                            <td class="text-end fw-bold fs-5 text-success">@pedido.ValorTotal.ToString("C")</td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Linha do Tempo / Histórico de Mudanças -->
+                    <div class="card shadow-sm border-0">
+                        <div class="card-header bg-white py-3">
+                            <h5 class="mb-0 fw-bold">Histórico de Alterações de Status</h5>
+                        </div>
+                        <div class="card-body">
+                            @if (pedido.Historico.Count == 0)
+                            {
+                                <p class="text-muted mb-0">Nenhuma transição registrada.</p>
+                            }
+                            else
+                            {
+                                <ul class="list-group list-group-flush">
+                                    @foreach (var hist in pedido.Historico)
+                                    {
+                                        <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <span class="badge @ObterClasseBadge(hist.StatusAnterior) me-1">@hist.StatusAnteriorDescricao</span>
+                                                <i class="bi bi-arrow-right mx-1 text-muted"></i>
+                                                <span class="badge @ObterClasseBadge(hist.StatusNovo) me-2">@hist.StatusNovoDescricao</span>
+                                                <span class="text-muted small">por <strong>@hist.NomeUsuarioResponsavel</strong></span>
+                                            </div>
+                                            <small class="text-muted">@hist.AlteradoEm.ToLocalTime().ToString("dd/MM/yyyy HH:mm:ss")</small>
+                                        </li>
+                                    }
+                                </ul>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Coluna Lateral: Dados do Cliente e Painel de Ações de Status -->
+                <div class="col-lg-4">
+                    <!-- Painel de Transição de Status -->
+                    <div class="card shadow-sm border-0 mb-4 border-top border-primary border-3">
+                        <div class="card-header bg-white py-3">
+                            <h5 class="mb-0 fw-bold">Ações do Pedido</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="small text-muted mb-3">
+                                Atualize o andamento do pedido de acordo com o fluxo operacional da loja:
+                            </p>
+
+                            @if (pedido.Status == StatusPedido.Pendente)
+                            {
+                                <div class="d-grid gap-2">
+                                    <button class="btn btn-info text-white" @onclick="() => AlterarStatus(StatusPedido.EmPreparacao)" disabled="@processandoAcao">
+                                        <i class="bi bi-box me-1"></i> Iniciar Preparação
+                                    </button>
+                                    <button class="btn btn-outline-danger" @onclick="CancelarPedido" disabled="@processandoAcao">
+                                        <i class="bi bi-x-circle me-1"></i> Cancelar Pedido & Devolver Estoque
+                                    </button>
+                                </div>
+                            }
+                            else if (pedido.Status == StatusPedido.EmPreparacao)
+                            {
+                                <div class="d-grid">
+                                    <button class="btn btn-primary" @onclick="() => AlterarStatus(StatusPedido.ProntoParaRetirada)" disabled="@processandoAcao">
+                                        <i class="bi bi-check2-circle me-1"></i> Marcar Pronto para Retirada
+                                    </button>
+                                </div>
+                            }
+                            else if (pedido.Status == StatusPedido.ProntoParaRetirada)
+                            {
+                                <div class="d-grid">
+                                    <button class="btn btn-success" @onclick="() => AlterarStatus(StatusPedido.Concluido)" disabled="@processandoAcao">
+                                        <i class="bi bi-currency-dollar me-1"></i> Confirmar Retirada & Pagamento
+                                    </button>
+                                </div>
+                            }
+                            else if (pedido.Status == StatusPedido.Concluido)
+                            {
+                                <div class="alert alert-success mb-0 py-2 text-center small">
+                                    <i class="bi bi-check-all me-1"></i> Pedido concluído e entregue com sucesso!
+                                </div>
+                            }
+                            else if (pedido.Status == StatusPedido.Cancelado)
+                            {
+                                <div class="alert alert-danger mb-0 py-2 text-center small">
+                                    <i class="bi bi-slash-circle me-1"></i> Pedido cancelado (estoque devolvido).
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Dados do Cliente e Retirada -->
+                    <div class="card shadow-sm border-0">
+                        <div class="card-header bg-white py-3">
+                            <h5 class="mb-0 fw-bold">Informações do Cliente</h5>
+                        </div>
+                        <div class="card-body">
+                            <dl class="row mb-0 small">
+                                <dt class="col-4 text-muted">Nome:</dt>
+                                <dd class="col-8 fw-semibold">@pedido.NomeCliente</dd>
+
+                                <dt class="col-4 text-muted">E-mail:</dt>
+                                <dd class="col-8">@pedido.EmailCliente</dd>
+
+                                <dt class="col-4 text-muted">Telefone:</dt>
+                                <dd class="col-8">@pedido.TelefoneCliente</dd>
+
+                                <dt class="col-4 text-muted">Data:</dt>
+                                <dd class="col-8">@pedido.DataPedido.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</dd>
+
+                                <dt class="col-4 text-muted">Retirada:</dt>
+                                <dd class="col-8 text-primary fw-semibold">Presencial na Loja</dd>
+
+                                <dt class="col-4 text-muted">Pagamento:</dt>
+                                <dd class="col-8 text-success fw-semibold">À vista no balcão</dd>
+
+                                @if (!string.IsNullOrWhiteSpace(pedido.Observacao))
+                                {
+                                    <dt class="col-12 text-muted mt-2">Observações:</dt>
+                                    <dd class="col-12 fst-italic bg-light p-2 rounded">@pedido.Observacao</dd>
+                                }
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    [Parameter]
+    public Guid Id { get; set; }
+
+    private PedidoDetalheResponse? pedido;
+    private bool carregando = true;
+    private bool processandoAcao = false;
+    private string? mensagemSucesso;
+    private string? mensagemErro;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (SessionService.IsAuthenticated)
+        {
+            await CarregarPedido();
+        }
+        else
+        {
+            carregando = false;
+        }
+    }
+
+    private async Task CarregarPedido()
+    {
+        carregando = true;
+        mensagemErro = null;
+
+        try
+        {
+            pedido = await PedidoService.ObterPorIdAsync(Id);
+        }
+        catch (Exception ex)
+        {
+            mensagemErro = ex.Message;
+        }
+        finally
+        {
+            carregando = false;
+        }
+    }
+
+    private async Task AlterarStatus(StatusPedido novoStatus)
+    {
+        processandoAcao = true;
+        mensagemErro = null;
+        mensagemSucesso = null;
+
+        try
+        {
+            pedido = await PedidoService.AlterarStatusAsync(Id, novoStatus);
+            mensagemSucesso = $"Status do pedido alterado com sucesso para '{novoStatus}'!";
+        }
+        catch (Exception ex)
+        {
+            mensagemErro = ex.Message;
+        }
+        finally
+        {
+            processandoAcao = false;
+        }
+    }
+
+    private async Task CancelarPedido()
+    {
+        processandoAcao = true;
+        mensagemErro = null;
+        mensagemSucesso = null;
+
+        try
+        {
+            await PedidoService.CancelarAsync(Id);
+            mensagemSucesso = "Pedido cancelado com sucesso e quantidades devolvidas ao estoque!";
+            await CarregarPedido();
+        }
+        catch (Exception ex)
+        {
+            mensagemErro = ex.Message;
+        }
+        finally
+        {
+            processandoAcao = false;
+        }
+    }
+
+    private string ObterClasseBadge(StatusPedido status) => status switch
+    {
+        StatusPedido.Pendente => "bg-warning text-dark",
+        StatusPedido.EmPreparacao => "bg-info text-dark",
+        StatusPedido.ProntoParaRetirada => "bg-primary",
+        StatusPedido.Concluido => "bg-success",
+        StatusPedido.Cancelado => "bg-danger",
+        _ => "bg-secondary"
+    };
+}
