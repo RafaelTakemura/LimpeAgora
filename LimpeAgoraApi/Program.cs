@@ -28,7 +28,7 @@ builder.Services.AddCors(options =>
 
 // Configuração do DbContext com MySQL via Pomelo
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? "Server=localhost;Port=3306;Database=limpeagora_dev;Uid=root;Pwd=root;";
+    ?? "Server=localhost;Port=3306;Database=limpeagora_dev;Uid=root;Pwd=;";
 
 builder.Services.AddDbContext<LimpeAgoraDbContext>(options =>
 {
@@ -36,7 +36,12 @@ builder.Services.AddDbContext<LimpeAgoraDbContext>(options =>
 });
 
 // Configuração da Autenticação JWT
-var chaveSecreta = builder.Configuration["Jwt:Key"] ?? "LimpeAgora_Super_Segredo_Chave_De_Desenvolvimento_2026_UdC_WebMobile!";
+var chaveSecreta = builder.Configuration["Jwt:Key"];
+if (string.IsNullOrWhiteSpace(chaveSecreta) || chaveSecreta.StartsWith("SUA_CHAVE_JWT"))
+{
+    // Chave padrão para testes/desenvolvimento caso não configurada em User Secrets
+    chaveSecreta = "LimpeAgora_Chave_Desenvolvimento_Local_Testes_Padrao_2026_Minimo32Chars!";
+}
 var issuer = builder.Configuration["Jwt:Issuer"] ?? "LimpeAgoraApi";
 var audience = builder.Configuration["Jwt:Audience"] ?? "LimpeAgoraClients";
 

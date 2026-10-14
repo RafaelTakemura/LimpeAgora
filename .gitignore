@@ -480,3 +480,33 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# ====================================================
+# LimpeAgora - Arquivos Locais, Segredos e Bancos
+# ====================================================
+# Segredos locais e configurações de ambiente
+appsettings*.local.json
+appsettings.Production.json
+secrets.json
+.env
+.env.*
+!.env.example
+
+# Bancos de dados locais e SQLite (MAUI / EF)
+*.db
+*.sqlite
+*.sqlite3
+*.db-shm
+*.db-wal
+
+# Dumps e relatórios de falhas locais
+*.dmp
+*.stackdump
+*crash*.txt
+maui_crash.txt
+
+# Backups locais
+*.original
+*.backup
+*.orig_commit
+

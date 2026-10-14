@@ -18,7 +18,11 @@ public class TokenService : ITokenService
 
     public (string Token, DateTime ExpiraEm) GerarToken(Usuario usuario)
     {
-        var chaveSecreta = _configuration["Jwt:Key"] ?? "LimpeAgora_Super_Segredo_Chave_De_Desenvolvimento_2026_UdC_WebMobile!";
+        var chaveSecreta = _configuration["Jwt:Key"];
+        if (string.IsNullOrWhiteSpace(chaveSecreta) || chaveSecreta.StartsWith("SUA_CHAVE_JWT"))
+        {
+            chaveSecreta = "LimpeAgora_Chave_Desenvolvimento_Local_Testes_Padrao_2026_Minimo32Chars!";
+        }
         var issuer = _configuration["Jwt:Issuer"] ?? "LimpeAgoraApi";
         var audience = _configuration["Jwt:Audience"] ?? "LimpeAgoraClients";
         var expirationHours = int.TryParse(_configuration["Jwt:ExpirationHours"], out var hours) ? hours : 8;
