@@ -1,5 +1,4 @@
 @page "/usuarios"
-@rendermode InteractiveServer
 @inject UsuarioWebService UsuarioService
 @inject AuthSessionService SessionService
 @inject NavigationManager Navigation
@@ -210,6 +209,11 @@
 
     protected override async Task OnInitializedAsync()
     {
+        if (!SessionService.IsAuthenticated)
+        {
+            await SessionService.RestaurarSessaoAsync();
+        }
+
         if (SessionService.IsAdmin)
         {
             await CarregarUsuarios();

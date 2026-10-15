@@ -1,5 +1,4 @@
 @page "/produtos"
-@rendermode InteractiveServer
 @inject ProdutoWebService ProdutoService
 @inject CategoriaWebService CategoriaService
 @inject AuthSessionService SessionService
@@ -316,6 +315,11 @@
 
     protected override async Task OnInitializedAsync()
     {
+        if (!SessionService.IsAuthenticated)
+        {
+            await SessionService.RestaurarSessaoAsync();
+        }
+
         if (SessionService.IsAuthenticated)
         {
             await CarregarCategorias();

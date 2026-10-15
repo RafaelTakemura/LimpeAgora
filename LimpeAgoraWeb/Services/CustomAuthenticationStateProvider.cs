@@ -13,12 +13,17 @@ public class CustomAuthenticationStateProvider : AuthenticationStateProvider
         _sessionService.OnChange += () => NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
     }
 
-    public override Task<AuthenticationState> GetAuthenticationStateAsync()
+    public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
+        if (!_sessionService.IsAuthenticated)
+        {
+            await _sessionService.RestaurarSessaoAsync();
+        }
+
         if (!_sessionService.IsAuthenticated || _sessionService.Usuario == null)
         {
             var anonymous = new ClaimsPrincipal(new ClaimsIdentity());
-            return Task.FromResult(new AuthenticationState(anonymous));
+            return new AuthenticationState(anonymous);
         }
 
         var claims = new List<Claim>
@@ -33,6 +38,6 @@ public class CustomAuthenticationStateProvider : AuthenticationStateProvider
         var identity = new ClaimsIdentity(claims, "LimpeAgoraJwtAuth");
         var user = new ClaimsPrincipal(identity);
 
-        return Task.FromResult(new AuthenticationState(user));
+        return new AuthenticationState(user);
     }
 }

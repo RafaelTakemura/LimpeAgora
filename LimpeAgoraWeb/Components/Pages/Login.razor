@@ -1,5 +1,4 @@
 @page "/login"
-@rendermode InteractiveServer
 @inject AuthWebService AuthService
 @inject AuthSessionService SessionService
 @inject NavigationManager Navigation
@@ -65,6 +64,19 @@
     private string? mensagemErro;
     private bool carregando = false;
 
+    protected override async Task OnInitializedAsync()
+    {
+        if (!SessionService.IsAuthenticated)
+        {
+            await SessionService.RestaurarSessaoAsync();
+        }
+
+        if (SessionService.IsAuthenticated)
+        {
+            Navigation.NavigateTo("/");
+        }
+    }
+
     private async Task RealizarLogin()
     {
         carregando = true;
@@ -76,7 +88,7 @@
 
             if (authResponse.Usuario.Perfil == PerfilUsuario.Cliente)
             {
-                SessionService.EncerrarSessao();
+                await SessionService.EncerrarSessaoAsync();
                 mensagemErro = "Este painel é restrito a colaboradores. Clientes devem acessar pelo aplicativo mobile.";
                 return;
             }

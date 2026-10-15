@@ -1,5 +1,4 @@
 @page "/pedidos"
-@rendermode InteractiveServer
 @inject PedidoWebService PedidoService
 @inject AuthSessionService SessionService
 @inject NavigationManager Navigation
@@ -142,6 +141,11 @@
 
     protected override async Task OnInitializedAsync()
     {
+        if (!SessionService.IsAuthenticated)
+        {
+            await SessionService.RestaurarSessaoAsync();
+        }
+
         if (SessionService.IsAuthenticated)
         {
             await CarregarPedidos();

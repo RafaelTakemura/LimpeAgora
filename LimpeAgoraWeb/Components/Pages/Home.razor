@@ -1,5 +1,5 @@
 @page "/"
-@rendermode InteractiveServer
+@implements IDisposable
 @inject PedidoWebService PedidoService
 @inject AuthSessionService SessionService
 @inject NavigationManager Navigation
@@ -156,14 +156,12 @@
 
     protected override async Task OnInitializedAsync()
     {
-        SessionService.OnChange += async () =>
+        SessionService.OnChange += OnSessionChanged;
+
+        if (!SessionService.IsAuthenticated)
         {
-            if (SessionService.IsAuthenticated)
-            {
-                await CarregarDados();
-                await InvokeAsync(StateHasChanged);
-            }
-        };
+            await SessionService.RestaurarSessaoAsync();
+        }
 
         if (SessionService.IsAuthenticated)
         {
@@ -173,6 +171,20 @@
         {
             carregando = false;
         }
+    }
+
+    private async void OnSessionChanged()
+    {
+        if (SessionService.IsAuthenticated)
+        {
+            await CarregarDados();
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        SessionService.OnChange -= OnSessionChanged;
     }
 
     private async Task CarregarDados()

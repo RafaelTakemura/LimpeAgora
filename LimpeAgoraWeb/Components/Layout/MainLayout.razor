@@ -1,4 +1,5 @@
 @inherits LayoutComponentBase
+@implements IDisposable
 @inject AuthSessionService SessionService
 @inject NavigationManager Navigation
 
@@ -42,14 +43,30 @@
 </div>
 
 @code {
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        SessionService.OnChange += StateHasChanged;
+        SessionService.OnChange += OnSessionChanged;
+
+        if (!SessionService.IsAuthenticated)
+        {
+            var restaurou = await SessionService.RestaurarSessaoAsync();
+            if (restaurou)
+            {
+                StateHasChanged();
+            }
+        }
     }
 
-    private void FazerLogout()
+    private void OnSessionChanged() => InvokeAsync(StateHasChanged);
+
+    private async Task FazerLogout()
     {
-        SessionService.EncerrarSessao();
+        await SessionService.EncerrarSessaoAsync();
         Navigation.NavigateTo("/login");
+    }
+
+    public void Dispose()
+    {
+        SessionService.OnChange -= OnSessionChanged;
     }
 }

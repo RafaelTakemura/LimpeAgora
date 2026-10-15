@@ -1,3 +1,4 @@
+@implements IDisposable
 @inject AuthSessionService SessionService
 
 <div class="top-row ps-3 navbar navbar-dark bg-dark">
@@ -55,8 +56,24 @@
 </div>
 
 @code {
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        SessionService.OnChange += StateHasChanged;
+        SessionService.OnChange += OnSessionChanged;
+
+        if (!SessionService.IsAuthenticated)
+        {
+            var restaurou = await SessionService.RestaurarSessaoAsync();
+            if (restaurou)
+            {
+                StateHasChanged();
+            }
+        }
+    }
+
+    private void OnSessionChanged() => InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+    {
+        SessionService.OnChange -= OnSessionChanged;
     }
 }
