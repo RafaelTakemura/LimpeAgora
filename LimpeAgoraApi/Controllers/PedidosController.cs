@@ -20,7 +20,7 @@ public class PedidosController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "Cliente")]
+    [Authorize(Roles = "Cliente,Funcionario,Administrador")]
     [ProducesResponseType(typeof(PedidoDetalheResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -33,7 +33,7 @@ public class PedidosController : ControllerBase
     }
 
     [HttpGet("meus")]
-    [Authorize(Roles = "Cliente")]
+    [Authorize(Roles = "Cliente,Funcionario,Administrador")]
     [ProducesResponseType(typeof(List<PedidoResumoResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<List<PedidoResumoResponse>>> ListarMeusPedidos()

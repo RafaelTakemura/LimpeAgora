@@ -30,7 +30,7 @@ public partial class CategoriasViewModel : BaseViewModel
 
         try
         {
-            if (_apiClient.IsOnline)
+            try
             {
                 var remotas = await _apiClient.GetAsync<List<CategoriaResponse>>("api/categorias?apenasAtivas=true");
                 if (remotas != null)
@@ -52,23 +52,17 @@ public partial class CategoriasViewModel : BaseViewModel
                     {
                         Categorias.Add(c);
                     }
+
+                    DadosLocaisDesatualizados = false;
                     return;
                 }
             }
-
-            // Fallback para cache SQLite local caso API esteja offline
-            DadosLocaisDesatualizados = true;
-            var categoriasCache = await _localDb.ObterCategoriasAsync();
-            Categorias.Clear();
-            foreach (var c in categoriasCache)
+            catch (Exception ex)
             {
-                Categorias.Add(c);
+                System.Diagnostics.Debug.WriteLine($"[CategoriasViewModel] Erro ao carregar categorias da API: {ex.Message}");
             }
-        }
-        catch (Exception ex)
-        {
-            // Em caso de erro de rede, tenta recuperar do cache local
-            DadosLocaisDesatualizados = true;
+
+            // Se a API não respondeu ou falhou, recorre ao cache local SQLite
             var categoriasCache = await _localDb.ObterCategoriasAsync();
             Categorias.Clear();
             foreach (var c in categoriasCache)
@@ -76,9 +70,11 @@ public partial class CategoriasViewModel : BaseViewModel
                 Categorias.Add(c);
             }
 
-            if (!Categorias.Any())
+            // Apenas sinaliza modo offline se os dados exibidos vierem exclusivamente do cache SQLite
+            DadosLocaisDesatualizados = Categorias.Count > 0;
+            if (Categorias.Count == 0)
             {
-                MensagemErro = $"Falha ao carregar categorias: {ex.Message}";
+                MensagemErro = "Não foi possível carregar as categorias da API e não há dados em cache local.";
             }
         }
         finally

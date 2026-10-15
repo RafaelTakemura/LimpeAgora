@@ -49,63 +49,52 @@ public partial class MeusPedidosViewModel : BaseViewModel
 
         try
         {
-            if (_apiClient.IsOnline)
+            var remotas = await _apiClient.GetAsync<List<PedidoResumoResponse>>("api/pedidos/meus");
+            if (remotas != null)
             {
-                var remotas = await _apiClient.GetAsync<List<PedidoResumoResponse>>("api/pedidos/meus");
-                if (remotas != null)
+                var locais = remotas.Select(p => new PedidoLocal
                 {
-                    var locais = remotas.Select(p => new PedidoLocal
-                    {
-                        Id = p.Id,
-                        UsuarioId = p.UsuarioId,
-                        NomeCliente = p.NomeCliente,
-                        DataPedido = p.DataPedido,
-                        Status = p.Status,
-                        StatusDescricao = p.StatusDescricao,
-                        ValorTotal = p.ValorTotal,
-                        TotalItens = p.TotalItens,
-                        Observacao = p.Observacao,
-                        SincronizadoEm = DateTime.UtcNow
-                    }).ToList();
+                    Id = p.Id,
+                    UsuarioId = p.UsuarioId,
+                    NomeCliente = p.NomeCliente,
+                    DataPedido = p.DataPedido,
+                    Status = p.Status,
+                    StatusDescricao = p.StatusDescricao,
+                    ValorTotal = p.ValorTotal,
+                    TotalItens = p.TotalItens,
+                    Observacao = p.Observacao,
+                    SincronizadoEm = DateTime.UtcNow
+                }).ToList();
 
-                    await _localDb.SalvarPedidosAsync(userId.Value, locais);
+                await _localDb.SalvarPedidosAsync(userId.Value, locais);
 
-                    Pedidos.Clear();
-                    foreach (var p in locais)
-                    {
-                        Pedidos.Add(p);
-                    }
-                    return;
+                Pedidos.Clear();
+                foreach (var p in locais)
+                {
+                    Pedidos.Add(p);
                 }
-            }
 
-            // Fallback SQLite local
-            DadosLocaisDesatualizados = true;
-            var pedidosCache = await _localDb.ObterPedidosAsync(userId.Value);
-            Pedidos.Clear();
-            foreach (var p in pedidosCache)
-            {
-                Pedidos.Add(p);
+                DadosLocaisDesatualizados = false;
+                return;
             }
         }
         catch (Exception ex)
         {
-            DadosLocaisDesatualizados = true;
-            var pedidosCache = await _localDb.ObterPedidosAsync(userId.Value);
-            Pedidos.Clear();
-            foreach (var p in pedidosCache)
-            {
-                Pedidos.Add(p);
-            }
-
-            if (!Pedidos.Any())
-            {
-                MensagemErro = $"Falha ao carregar pedidos: {ex.Message}";
-            }
+            System.Diagnostics.Debug.WriteLine($"[MeusPedidosViewModel] Erro ao carregar pedidos da API: {ex.Message}");
         }
-        finally
+
+        // Se a API não respondeu ou falhou, recorre ao cache local SQLite
+        var pedidosCache = await _localDb.ObterPedidosAsync(userId.Value);
+        Pedidos.Clear();
+        foreach (var p in pedidosCache)
         {
-            IsBusy = false;
+            Pedidos.Add(p);
+        }
+
+        DadosLocaisDesatualizados = Pedidos.Count > 0;
+        if (Pedidos.Count == 0)
+        {
+            MensagemErro = "Nenhum pedido encontrado.";
         }
     }
 
@@ -117,7 +106,7 @@ public partial class MeusPedidosViewModel : BaseViewModel
         IsBusy = true;
         try
         {
-            if (_apiClient.IsOnline)
+            try
             {
                 var detalhe = await _apiClient.GetAsync<PedidoDetalheResponse>($"api/pedidos/{pedido.Id}");
                 if (detalhe != null)
@@ -138,6 +127,10 @@ public partial class MeusPedidosViewModel : BaseViewModel
                     await _localDb.SalvarItensPedidoAsync(detalhe.Id, itensLocais);
                     return;
                 }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[MeusPedidosViewModel] Erro ao carregar detalhes online: {ex.Message}");
             }
 
             // Fallback SQLite para itens

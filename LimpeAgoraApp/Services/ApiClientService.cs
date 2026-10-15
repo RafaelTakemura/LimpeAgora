@@ -23,8 +23,29 @@ public class ApiClientService : IApiClientService
             ? "http://10.0.2.2:5025/"
             : "http://localhost:5025/";
 
-    public bool IsOnline => Connectivity.Current.NetworkAccess != NetworkAccess.None &&
-                            Connectivity.Current.NetworkAccess != NetworkAccess.Unknown;
+    public bool IsOnline
+    {
+        get
+        {
+            try
+            {
+                var access = Connectivity.Current.NetworkAccess;
+
+                // Em ambiente local (localhost, 127.0.0.1, 10.0.2.2) ou Windows Desktop,
+                // a comunicação local não depende de conexão WAN/Internet pública externa
+                if (BaseUrl.Contains("localhost") || BaseUrl.Contains("127.0.0.1") || BaseUrl.Contains("10.0.2.2") || DeviceInfo.Platform == DevicePlatform.WinUI)
+                {
+                    return access != NetworkAccess.None;
+                }
+
+                return access != NetworkAccess.None && access != NetworkAccess.Unknown;
+            }
+            catch
+            {
+                return true;
+            }
+        }
+    }
 
     public ApiClientService(IAuthStorageService authStorage)
     {
@@ -58,11 +79,6 @@ public class ApiClientService : IApiClientService
 
     public async Task<T?> GetAsync<T>(string endpoint)
     {
-        if (!IsOnline)
-        {
-            throw new HttpRequestException("Dispositivo sem conexão à internet.");
-        }
-
         await AplicarTokenAsync();
         var response = await _httpClient.GetAsync(endpoint);
         await TratarErroSeHouverAsync(response);
@@ -71,11 +87,6 @@ public class ApiClientService : IApiClientService
 
     public async Task<TResponse?> PostAsync<TRequest, TResponse>(string endpoint, TRequest data)
     {
-        if (!IsOnline)
-        {
-            throw new HttpRequestException("Dispositivo sem conexão à internet.");
-        }
-
         await AplicarTokenAsync();
         var response = await _httpClient.PostAsJsonAsync(endpoint, data, _jsonOptions);
         await TratarErroSeHouverAsync(response);
@@ -84,11 +95,6 @@ public class ApiClientService : IApiClientService
 
     public async Task PostAsync<TRequest>(string endpoint, TRequest data)
     {
-        if (!IsOnline)
-        {
-            throw new HttpRequestException("Dispositivo sem conexão à internet.");
-        }
-
         await AplicarTokenAsync();
         var response = await _httpClient.PostAsJsonAsync(endpoint, data, _jsonOptions);
         await TratarErroSeHouverAsync(response);

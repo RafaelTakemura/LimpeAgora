@@ -81,7 +81,7 @@ public partial class ProdutosViewModel : BaseViewModel
 
         try
         {
-            if (_apiClient.IsOnline)
+            try
             {
                 var endpoint = catId.HasValue
                     ? $"api/produtos?apenasAtivos=true&categoriaId={catId.Value}"
@@ -113,23 +113,17 @@ public partial class ProdutosViewModel : BaseViewModel
                         p.QuantidadeNoCarrinho = _carrinho.ObterQuantidadeDoProduto(p.Id);
                         Produtos.Add(p);
                     }
+
+                    DadosLocaisDesatualizados = false;
                     return;
                 }
             }
-
-            // Fallback SQLite local
-            DadosLocaisDesatualizados = true;
-            var produtosCache = await _localDb.ObterProdutosAsync(catId);
-            Produtos.Clear();
-            foreach (var p in produtosCache)
+            catch (Exception ex)
             {
-                p.QuantidadeNoCarrinho = _carrinho.ObterQuantidadeDoProduto(p.Id);
-                Produtos.Add(p);
+                System.Diagnostics.Debug.WriteLine($"[ProdutosViewModel] Erro ao carregar produtos da API: {ex.Message}");
             }
-        }
-        catch (Exception ex)
-        {
-            DadosLocaisDesatualizados = true;
+
+            // Se a API não respondeu ou falhou, recorre ao cache local SQLite
             var produtosCache = await _localDb.ObterProdutosAsync(catId);
             Produtos.Clear();
             foreach (var p in produtosCache)
@@ -138,9 +132,10 @@ public partial class ProdutosViewModel : BaseViewModel
                 Produtos.Add(p);
             }
 
-            if (!Produtos.Any())
+            DadosLocaisDesatualizados = Produtos.Count > 0;
+            if (Produtos.Count == 0)
             {
-                MensagemErro = $"Falha ao carregar produtos: {ex.Message}";
+                MensagemErro = "Não foi possível carregar os produtos da API e não há dados em cache local.";
             }
         }
         finally
