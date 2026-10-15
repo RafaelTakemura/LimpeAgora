@@ -81,49 +81,52 @@ public partial class ProdutosViewModel : BaseViewModel
 
         try
         {
+            var endpoint = catId.HasValue
+                ? $"api/produtos?apenasAtivos=true&categoriaId={catId.Value}"
+                : "api/produtos?apenasAtivos=true";
+
+            List<ProdutoResponse>? remotas = null;
             try
             {
-                var endpoint = catId.HasValue
-                    ? $"api/produtos?apenasAtivos=true&categoriaId={catId.Value}"
-                    : "api/produtos?apenasAtivos=true";
-
-                var remotas = await _apiClient.GetAsync<List<ProdutoResponse>>(endpoint);
-                if (remotas != null)
-                {
-                    var locais = remotas.Select(p => new ProdutoLocal
-                    {
-                        Id = p.Id,
-                        CategoriaId = p.CategoriaId,
-                        NomeCategoria = p.NomeCategoria,
-                        Nome = p.Nome,
-                        Descricao = p.Descricao,
-                        Apresentacao = p.Apresentacao,
-                        Preco = p.Preco,
-                        QuantidadeEstoque = p.QuantidadeEstoque,
-                        ImagemUrl = p.ImagemUrl,
-                        Ativo = p.Ativo,
-                        AtualizadoEmLocal = DateTime.UtcNow
-                    }).ToList();
-
-                    await _localDb.SalvarProdutosAsync(locais);
-
-                    Produtos.Clear();
-                    foreach (var p in locais)
-                    {
-                        p.QuantidadeNoCarrinho = _carrinho.ObterQuantidadeDoProduto(p.Id);
-                        Produtos.Add(p);
-                    }
-
-                    DadosLocaisDesatualizados = false;
-                    return;
-                }
+                remotas = await _apiClient.GetAsync<List<ProdutoResponse>>(endpoint);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[ProdutosViewModel] Erro ao carregar produtos da API: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[ProdutosViewModel] API indisponível: {ex}");
             }
 
-            // Se a API não respondeu ou falhou, recorre ao cache local SQLite
+            if (remotas != null)
+            {
+                // API respondeu: exibe dados online, independentemente do resultado do cache
+                var locais = remotas.Select(p => new ProdutoLocal
+                {
+                    Id = p.Id,
+                    CategoriaId = p.CategoriaId,
+                    NomeCategoria = p.NomeCategoria,
+                    Nome = p.Nome,
+                    Descricao = p.Descricao,
+                    Apresentacao = p.Apresentacao,
+                    Preco = p.Preco,
+                    QuantidadeEstoque = p.QuantidadeEstoque,
+                    ImagemUrl = p.ImagemUrl,
+                    Ativo = p.Ativo,
+                    AtualizadoEmLocal = DateTime.UtcNow
+                }).ToList();
+
+                Produtos.Clear();
+                foreach (var p in locais)
+                {
+                    p.QuantidadeNoCarrinho = _carrinho.ObterQuantidadeDoProduto(p.Id);
+                    Produtos.Add(p);
+                }
+                DadosLocaisDesatualizados = false;
+
+                try { await _localDb.SalvarProdutosAsync(locais); }
+                catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[ProdutosViewModel] Falha ao gravar cache: {ex}"); }
+                return;
+            }
+
+            // API realmente inacessível: usa cache SQLite
             var produtosCache = await _localDb.ObterProdutosAsync(catId);
             Produtos.Clear();
             foreach (var p in produtosCache)

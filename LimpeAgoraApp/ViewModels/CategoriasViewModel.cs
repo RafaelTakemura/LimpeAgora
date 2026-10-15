@@ -30,39 +30,42 @@ public partial class CategoriasViewModel : BaseViewModel
 
         try
         {
+            List<CategoriaResponse>? remotas = null;
             try
             {
-                var remotas = await _apiClient.GetAsync<List<CategoriaResponse>>("api/categorias?apenasAtivas=true");
-                if (remotas != null)
-                {
-                    var locais = remotas.Select(c => new CategoriaLocal
-                    {
-                        Id = c.Id,
-                        Nome = c.Nome,
-                        Descricao = c.Descricao,
-                        Ativa = c.Ativa,
-                        CriadoEm = c.CriadoEm,
-                        AtualizadoEmLocal = DateTime.UtcNow
-                    }).ToList();
-
-                    await _localDb.SalvarCategoriasAsync(locais);
-
-                    Categorias.Clear();
-                    foreach (var c in locais)
-                    {
-                        Categorias.Add(c);
-                    }
-
-                    DadosLocaisDesatualizados = false;
-                    return;
-                }
+                remotas = await _apiClient.GetAsync<List<CategoriaResponse>>("api/categorias?apenasAtivas=true");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[CategoriasViewModel] Erro ao carregar categorias da API: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[CategoriasViewModel] API indisponível: {ex}");
             }
 
-            // Se a API não respondeu ou falhou, recorre ao cache local SQLite
+            if (remotas != null)
+            {
+                // API respondeu: exibe dados online, independentemente do resultado do cache
+                var locais = remotas.Select(c => new CategoriaLocal
+                {
+                    Id = c.Id,
+                    Nome = c.Nome,
+                    Descricao = c.Descricao,
+                    Ativa = c.Ativa,
+                    CriadoEm = c.CriadoEm,
+                    AtualizadoEmLocal = DateTime.UtcNow
+                }).ToList();
+
+                Categorias.Clear();
+                foreach (var c in locais)
+                {
+                    Categorias.Add(c);
+                }
+                DadosLocaisDesatualizados = false;
+
+                try { await _localDb.SalvarCategoriasAsync(locais); }
+                catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[CategoriasViewModel] Falha ao gravar cache: {ex}"); }
+                return;
+            }
+
+            // API realmente inacessível: usa cache SQLite
             var categoriasCache = await _localDb.ObterCategoriasAsync();
             Categorias.Clear();
             foreach (var c in categoriasCache)
@@ -70,7 +73,6 @@ public partial class CategoriasViewModel : BaseViewModel
                 Categorias.Add(c);
             }
 
-            // Apenas sinaliza modo offline se os dados exibidos vierem exclusivamente do cache SQLite
             DadosLocaisDesatualizados = Categorias.Count > 0;
             if (Categorias.Count == 0)
             {

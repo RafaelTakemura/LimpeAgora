@@ -49,9 +49,19 @@ public partial class MeusPedidosViewModel : BaseViewModel
 
         try
         {
-            var remotas = await _apiClient.GetAsync<List<PedidoResumoResponse>>("api/pedidos/meus");
+            List<PedidoResumoResponse>? remotas = null;
+            try
+            {
+                remotas = await _apiClient.GetAsync<List<PedidoResumoResponse>>("api/pedidos/meus");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[MeusPedidosViewModel] API indisponível: {ex}");
+            }
+
             if (remotas != null)
             {
+                // API respondeu: exibe dados online, independentemente do resultado do cache
                 var locais = remotas.Select(p => new PedidoLocal
                 {
                     Id = p.Id,
@@ -66,35 +76,35 @@ public partial class MeusPedidosViewModel : BaseViewModel
                     SincronizadoEm = DateTime.UtcNow
                 }).ToList();
 
-                await _localDb.SalvarPedidosAsync(userId.Value, locais);
-
                 Pedidos.Clear();
                 foreach (var p in locais)
                 {
                     Pedidos.Add(p);
                 }
-
                 DadosLocaisDesatualizados = false;
+
+                try { await _localDb.SalvarPedidosAsync(userId.Value, locais); }
+                catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[MeusPedidosViewModel] Falha ao gravar cache: {ex}"); }
                 return;
             }
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"[MeusPedidosViewModel] Erro ao carregar pedidos da API: {ex.Message}");
-        }
 
-        // Se a API não respondeu ou falhou, recorre ao cache local SQLite
-        var pedidosCache = await _localDb.ObterPedidosAsync(userId.Value);
-        Pedidos.Clear();
-        foreach (var p in pedidosCache)
-        {
-            Pedidos.Add(p);
-        }
+            // API realmente inacessível: usa cache SQLite
+            var pedidosCache = await _localDb.ObterPedidosAsync(userId.Value);
+            Pedidos.Clear();
+            foreach (var p in pedidosCache)
+            {
+                Pedidos.Add(p);
+            }
 
-        DadosLocaisDesatualizados = Pedidos.Count > 0;
-        if (Pedidos.Count == 0)
+            DadosLocaisDesatualizados = Pedidos.Count > 0;
+            if (Pedidos.Count == 0)
+            {
+                MensagemErro = "Nenhum pedido encontrado.";
+            }
+        }
+        finally
         {
-            MensagemErro = "Nenhum pedido encontrado.";
+            IsBusy = false;
         }
     }
 
