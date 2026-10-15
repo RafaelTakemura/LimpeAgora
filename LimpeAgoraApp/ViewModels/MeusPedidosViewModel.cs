@@ -96,7 +96,7 @@ public partial class MeusPedidosViewModel : BaseViewModel
                 Pedidos.Add(p);
             }
 
-            DadosLocaisDesatualizados = Pedidos.Count > 0;
+            DadosLocaisDesatualizados = true;
             if (Pedidos.Count == 0)
             {
                 MensagemErro = "Nenhum pedido encontrado.";

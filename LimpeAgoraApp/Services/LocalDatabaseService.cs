@@ -47,11 +47,25 @@ public class LocalDatabaseService : ILocalDatabaseService
             .ToListAsync();
     }
 
-    public async Task SalvarProdutosAsync(IEnumerable<ProdutoLocal> produtos)
+    public async Task SalvarProdutosAsync(IEnumerable<ProdutoLocal> produtos, Guid? categoriaId = null)
     {
         await InicializarAsync();
-        await _database!.DeleteAllAsync<ProdutoLocal>();
-        await _database.InsertAllAsync(produtos);
+
+        if (categoriaId.HasValue && categoriaId.Value != Guid.Empty)
+        {
+            // Carga filtrada: substitui apenas os produtos da categoria, preservando o cache das demais
+            var catId = categoriaId.Value;
+            await _database!.Table<ProdutoLocal>().Where(p => p.CategoriaId == catId).DeleteAsync();
+        }
+        else
+        {
+            await _database!.DeleteAllAsync<ProdutoLocal>();
+        }
+
+        foreach (var produto in produtos)
+        {
+            await _database.InsertOrReplaceAsync(produto);
+        }
     }
 
     public async Task<List<ProdutoLocal>> ObterProdutosAsync(Guid? categoriaId = null)

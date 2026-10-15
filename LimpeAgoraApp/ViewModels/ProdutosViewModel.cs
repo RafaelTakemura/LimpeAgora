@@ -121,7 +121,7 @@ public partial class ProdutosViewModel : BaseViewModel
                 }
                 DadosLocaisDesatualizados = false;
 
-                try { await _localDb.SalvarProdutosAsync(locais); }
+                try { await _localDb.SalvarProdutosAsync(locais, catId); }
                 catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[ProdutosViewModel] Falha ao gravar cache: {ex}"); }
                 return;
             }
@@ -135,7 +135,7 @@ public partial class ProdutosViewModel : BaseViewModel
                 Produtos.Add(p);
             }
 
-            DadosLocaisDesatualizados = Produtos.Count > 0;
+            DadosLocaisDesatualizados = true;
             if (Produtos.Count == 0)
             {
                 MensagemErro = "Não foi possível carregar os produtos da API e não há dados em cache local.";

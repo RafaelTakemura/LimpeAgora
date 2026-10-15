@@ -73,7 +73,7 @@ public partial class CategoriasViewModel : BaseViewModel
                 Categorias.Add(c);
             }
 
-            DadosLocaisDesatualizados = Categorias.Count > 0;
+            DadosLocaisDesatualizados = true;
             if (Categorias.Count == 0)
             {
                 MensagemErro = "Não foi possível carregar as categorias da API e não há dados em cache local.";
